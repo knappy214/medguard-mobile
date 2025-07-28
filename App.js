@@ -9,7 +9,7 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './src/i18n/config';
-import { Platform } from 'react-native';
+import { Platform, View, Text, ActivityIndicator } from 'react-native';
 
 // Import screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -21,7 +21,7 @@ import MedicationDetailScreen from './src/screens/MedicationDetailScreen';
 // Import context providers
 import { NotificationProvider } from './src/contexts/NotificationContext';
 import { MedicationProvider } from './src/contexts/MedicationContext';
-import { LanguageProvider } from './src/contexts/LanguageContext';
+import { LanguageProvider, useLanguage } from './src/contexts/LanguageContext';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -37,7 +37,29 @@ Notifications.setNotificationHandler({
   }),
 });
 
+// Loading component
+const LoadingScreen = () => (
+  <View style={{ 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5'
+  }}>
+    <ActivityIndicator size="large" color="#2563EB" />
+    <Text style={{ 
+      marginTop: 16, 
+      fontSize: 16, 
+      color: '#666',
+      textAlign: 'center'
+    }}>
+      Loading MedGuard...
+    </Text>
+  </View>
+);
+
 function TabNavigator() {
+  const { t } = useLanguage();
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -68,23 +90,25 @@ function TabNavigator() {
       <Tab.Screen 
         name="Home" 
         component={HomeScreen}
-        options={{ title: 'Today' }}
+        options={{ title: t('navigation.home') }}
       />
       <Tab.Screen 
         name="Medications" 
         component={MedicationListScreen}
-        options={{ title: 'Medications' }}
+        options={{ title: t('navigation.medications') }}
       />
       <Tab.Screen 
         name="Settings" 
         component={SettingsScreen}
-        options={{ title: 'Settings' }}
+        options={{ title: t('navigation.settings') }}
       />
     </Tab.Navigator>
   );
 }
 
 function MainNavigator() {
+  const { t } = useLanguage();
+  
   return (
     <Stack.Navigator
       screenOptions={{
@@ -105,18 +129,19 @@ function MainNavigator() {
       <Stack.Screen 
         name="AddMedication" 
         component={AddMedicationScreen}
-        options={{ title: 'Add Medication' }}
+        options={{ title: t('navigation.addMedication') }}
       />
       <Stack.Screen 
         name="MedicationDetail" 
         component={MedicationDetailScreen}
-        options={{ title: 'Medication Details' }}
+        options={{ title: t('navigation.medicationDetails') }}
       />
     </Stack.Navigator>
   );
 }
 
-export default function App() {
+function AppContent() {
+  const { isLoading, isInitialized } = useLanguage();
   const [expoPushToken, setExpoPushToken] = useState('');
 
   useEffect(() => {
@@ -138,15 +163,26 @@ export default function App() {
     };
   }, []);
 
+  // Show loading screen while i18n is initializing
+  if (isLoading || !isInitialized) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <NavigationContainer>
+      <StatusBar style="light" />
+      <MainNavigator />
+    </NavigationContainer>
+  );
+}
+
+export default function App() {
   return (
     <I18nextProvider i18n={i18n}>
       <LanguageProvider>
         <NotificationProvider>
           <MedicationProvider>
-            <NavigationContainer>
-              <StatusBar style="light" />
-              <MainNavigator />
-            </NavigationContainer>
+            <AppContent />
           </MedicationProvider>
         </NotificationProvider>
       </LanguageProvider>

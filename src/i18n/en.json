@@ -38,7 +38,15 @@
     "skip": "Skip",
     "addNote": "Add Note",
     "viewDetails": "View Details",
-    "quickAdd": "Quick Add Medication"
+    "quickAdd": "Quick Add Medication",
+    "medicationCount": "{{count}} medication",
+    "medicationCount_plural": "{{count}} medications",
+    "doseCount": "{{count}} dose",
+    "doseCount_plural": "{{count}} doses",
+    "pillCount": "{{count}} pill",
+    "pillCount_plural": "{{count}} pills",
+    "tabletCount": "{{count}} tablet",
+    "tabletCount_plural": "{{count}} tablets"
   },
   "medications": {
     "title": "My Medications",
@@ -53,7 +61,11 @@
     "lastTaken": "Last Taken",
     "nextDose": "Next Dose",
     "noMedications": "No medications added yet",
-    "addFirstMedication": "Add your first medication to get started"
+    "addFirstMedication": "Add your first medication to get started",
+    "medicationCount": "{{count}} medication",
+    "medicationCount_plural": "{{count}} medications",
+    "refillCount": "{{count}} refill",
+    "refillCount_plural": "{{count}} refills"
   },
   "medicationForm": {
     "name": "Medication Name",
@@ -71,7 +83,11 @@
     "refillQuantity": "Refill at",
     "times": "Times",
     "addTime": "Add Time",
-    "removeTime": "Remove Time"
+    "removeTime": "Remove Time",
+    "dosageCount": "{{count}} mg",
+    "dosageCount_plural": "{{count}} mg",
+    "milliliterCount": "{{count}} ml",
+    "milliliterCount_plural": "{{count}} ml"
   },
   "medicationTypes": {
     "tablet": "Tablet",
@@ -81,7 +97,13 @@
     "inhaler": "Inhaler",
     "cream": "Cream",
     "drops": "Drops",
-    "other": "Other"
+    "other": "Other",
+    "tabletCount": "{{count}} tablet",
+    "tabletCount_plural": "{{count}} tablets",
+    "capsuleCount": "{{count}} capsule",
+    "capsuleCount_plural": "{{count}} capsules",
+    "injectionCount": "{{count}} injection",
+    "injectionCount_plural": "{{count}} injections"
   },
   "frequencies": {
     "daily": "Once daily",
@@ -89,20 +111,32 @@
     "three_times_daily": "Three times daily",
     "four_times_daily": "Four times daily",
     "weekly": "Weekly",
-    "custom": "Custom"
+    "custom": "Custom",
+    "everyXHours": "Every {{count}} hour",
+    "everyXHours_plural": "Every {{count}} hours",
+    "everyXDays": "Every {{count}} day",
+    "everyXDays_plural": "Every {{count}} days"
   },
   "times": {
     "morning": "Morning",
     "afternoon": "Afternoon",
     "evening": "Evening",
     "night": "Night",
-    "bedtime": "Bedtime"
+    "bedtime": "Bedtime",
+    "hourCount": "{{count}} hour",
+    "hourCount_plural": "{{count}} hours",
+    "minuteCount": "{{count}} minute",
+    "minuteCount_plural": "{{count}} minutes"
   },
   "stockLevels": {
     "full": "Full",
     "medium": "Medium",
     "low": "Low",
-    "empty": "Empty"
+    "empty": "Empty",
+    "stockCount": "{{count}} unit",
+    "stockCount_plural": "{{count}} units",
+    "daysRemaining": "{{count}} day remaining",
+    "daysRemaining_plural": "{{count}} days remaining"
   },
   "schedule": {
     "today": "Today",
@@ -112,7 +146,11 @@
     "pending": "Pending",
     "taken": "Taken",
     "missed": "Missed",
-    "skipped": "Skipped"
+    "skipped": "Skipped",
+    "dayCount": "{{count}} day",
+    "dayCount_plural": "{{count}} days",
+    "weekCount": "{{count}} week",
+    "weekCount_plural": "{{count}} weeks"
   },
   "notifications": {
     "medicationReminder": "Medication Reminder",
@@ -122,7 +160,9 @@
     "reminderMessage": "Time to take {{medication}}",
     "lowStockMessage": "{{medication}} is running low",
     "refillMessage": "Time to refill {{medication}}",
-    "missedDoseMessage": "You missed a dose of {{medication}}"
+    "missedDoseMessage": "You missed a dose of {{medication}}",
+    "notificationCount": "{{count}} notification",
+    "notificationCount_plural": "{{count}} notifications"
   },
   "settings": {
     "title": "Settings",
@@ -145,7 +185,9 @@
     "version": "Version",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
-    "contactSupport": "Contact Support"
+    "contactSupport": "Contact Support",
+    "settingCount": "{{count}} setting",
+    "settingCount_plural": "{{count}} settings"
   },
   "alerts": {
     "deleteMedication": "Delete Medication",
@@ -157,7 +199,9 @@
     "markAsMissed": "Mark as Missed",
     "markAsMissedMessage": "Mark {{medication}} as missed for {{time}}?",
     "skipDose": "Skip Dose",
-    "skipDoseMessage": "Skip {{medication}} for {{time}}?"
+    "skipDoseMessage": "Skip {{medication}} for {{time}}?",
+    "alertCount": "{{count}} alert",
+    "alertCount_plural": "{{count}} alerts"
   },
   "errors": {
     "general": "Something went wrong. Please try again.",
@@ -167,7 +211,9 @@
     "required": "This field is required",
     "invalidDate": "Invalid date",
     "invalidTime": "Invalid time",
-    "invalidQuantity": "Invalid quantity"
+    "invalidQuantity": "Invalid quantity",
+    "errorCount": "{{count}} error",
+    "errorCount_plural": "{{count}} errors"
   },
   "success": {
     "medicationAdded": "Medication added successfully",
@@ -176,6 +222,41 @@
     "doseMarked": "Dose marked successfully",
     "settingsSaved": "Settings saved successfully",
     "dataExported": "Data exported successfully",
-    "dataImported": "Data imported successfully"
+    "dataImported": "Data imported successfully",
+    "successCount": "{{count}} success",
+    "successCount_plural": "{{count}} successes"
+  },
+  "medical": {
+    "prescription": "Prescription",
+    "overTheCounter": "Over the Counter",
+    "supplement": "Supplement",
+    "vitamin": "Vitamin",
+    "antibiotic": "Antibiotic",
+    "painkiller": "Painkiller",
+    "bloodPressure": "Blood Pressure",
+    "diabetes": "Diabetes",
+    "heart": "Heart",
+    "cholesterol": "Cholesterol",
+    "asthma": "Asthma",
+    "allergy": "Allergy",
+    "sideEffects": "Side Effects",
+    "contraindications": "Contraindications",
+    "interactions": "Drug Interactions",
+    "dosageInstructions": "Dosage Instructions",
+    "takeWithFood": "Take with food",
+    "takeOnEmptyStomach": "Take on empty stomach",
+    "avoidAlcohol": "Avoid alcohol",
+    "avoidDairy": "Avoid dairy products",
+    "storeInRefrigerator": "Store in refrigerator",
+    "keepAtRoomTemperature": "Keep at room temperature",
+    "shakeWell": "Shake well before use",
+    "doNotCrush": "Do not crush or chew",
+    "takeAtBedtime": "Take at bedtime",
+    "takeInMorning": "Take in the morning",
+    "takeWithMeal": "Take with meal",
+    "prescriptionCount": "{{count}} prescription",
+    "prescriptionCount_plural": "{{count}} prescriptions",
+    "sideEffectCount": "{{count}} side effect",
+    "sideEffectCount_plural": "{{count}} side effects"
   }
 } 

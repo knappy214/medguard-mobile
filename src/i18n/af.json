@@ -38,7 +38,15 @@
     "skip": "Slaan Oor",
     "addNote": "Voeg Nota by",
     "viewDetails": "Bekyk Besonderhede",
-    "quickAdd": "Vinnig Voeg Medikasie by"
+    "quickAdd": "Vinnig Voeg Medikasie by",
+    "medicationCount": "{{count}} medikasie",
+    "medicationCount_plural": "{{count}} medikasies",
+    "doseCount": "{{count}} dosis",
+    "doseCount_plural": "{{count}} dosisse",
+    "pillCount": "{{count}} pil",
+    "pillCount_plural": "{{count}} pille",
+    "tabletCount": "{{count}} tablet",
+    "tabletCount_plural": "{{count}} tablette"
   },
   "medications": {
     "title": "My Medikasie",
@@ -53,7 +61,11 @@
     "lastTaken": "Laas Geneem",
     "nextDose": "Volgende Dosis",
     "noMedications": "Nog geen medikasie bygevoeg nie",
-    "addFirstMedication": "Voeg jou eerste medikasie by om te begin"
+    "addFirstMedication": "Voeg jou eerste medikasie by om te begin",
+    "medicationCount": "{{count}} medikasie",
+    "medicationCount_plural": "{{count}} medikasies",
+    "refillCount": "{{count}} hervul",
+    "refillCount_plural": "{{count}} hervullings"
   },
   "medicationForm": {
     "name": "Medikasie Naam",
@@ -71,7 +83,11 @@
     "refillQuantity": "Hervul by",
     "times": "Tye",
     "addTime": "Voeg Tyd by",
-    "removeTime": "Verwyder Tyd"
+    "removeTime": "Verwyder Tyd",
+    "dosageCount": "{{count}} mg",
+    "dosageCount_plural": "{{count}} mg",
+    "milliliterCount": "{{count}} ml",
+    "milliliterCount_plural": "{{count}} ml"
   },
   "medicationTypes": {
     "tablet": "Tablet",
@@ -81,7 +97,13 @@
     "inhaler": "Inhaleerder",
     "cream": "Room",
     "drops": "Druppels",
-    "other": "Ander"
+    "other": "Ander",
+    "tabletCount": "{{count}} tablet",
+    "tabletCount_plural": "{{count}} tablette",
+    "capsuleCount": "{{count}} kapsule",
+    "capsuleCount_plural": "{{count}} kapsules",
+    "injectionCount": "{{count}} injeksie",
+    "injectionCount_plural": "{{count}} injeksies"
   },
   "frequencies": {
     "daily": "Een keer daagliks",
@@ -89,20 +111,32 @@
     "three_times_daily": "Drie keer daagliks",
     "four_times_daily": "Vier keer daagliks",
     "weekly": "Weekliks",
-    "custom": "Pasgemaak"
+    "custom": "Pasgemaak",
+    "everyXHours": "Elke {{count}} uur",
+    "everyXHours_plural": "Elke {{count}} ure",
+    "everyXDays": "Elke {{count}} dag",
+    "everyXDays_plural": "Elke {{count}} dae"
   },
   "times": {
     "morning": "Oggend",
     "afternoon": "Middag",
     "evening": "Aand",
     "night": "Nag",
-    "bedtime": "Bedtyd"
+    "bedtime": "Bedtyd",
+    "hourCount": "{{count}} uur",
+    "hourCount_plural": "{{count}} ure",
+    "minuteCount": "{{count}} minuut",
+    "minuteCount_plural": "{{count}} minute"
   },
   "stockLevels": {
     "full": "Vol",
     "medium": "Medium",
     "low": "Laag",
-    "empty": "Leeg"
+    "empty": "Leeg",
+    "stockCount": "{{count}} eenheid",
+    "stockCount_plural": "{{count}} eenhede",
+    "daysRemaining": "{{count}} dag oor",
+    "daysRemaining_plural": "{{count}} dae oor"
   },
   "schedule": {
     "today": "Vandag",
@@ -112,17 +146,23 @@
     "pending": "Hangende",
     "taken": "Geneem",
     "missed": "Gemis",
-    "skipped": "Oorgeslaan"
+    "skipped": "Oorgeslaan",
+    "dayCount": "{{count}} dag",
+    "dayCount_plural": "{{count}} dae",
+    "weekCount": "{{count}} week",
+    "weekCount_plural": "{{count}} weke"
   },
   "notifications": {
     "medicationReminder": "Medikasie Herinnering",
     "lowStock": "Lae Voorraad Waarskuwing",
     "refillReminder": "Hervul Herinnering",
-    "missedDose": "Gemiste Dosis Waarskuwing",
+    "missedDose": "Gemisde Dosis Waarskuwing",
     "reminderMessage": "Tyd om {{medication}} te neem",
     "lowStockMessage": "{{medication}} raak min",
     "refillMessage": "Tyd om {{medication}} te hervul",
-    "missedDoseMessage": "Jy het 'n dosis van {{medication}} gemis"
+    "missedDoseMessage": "Jy het 'n dosis van {{medication}} gemis",
+    "notificationCount": "{{count}} kennisgewing",
+    "notificationCount_plural": "{{count}} kennisgewings"
   },
   "settings": {
     "title": "Instellings",
@@ -132,7 +172,7 @@
     "reminderTime": "Herinnering Tyd",
     "reminderTimeDescription": "Minute voor geskeduleerde tyd",
     "lowStockThreshold": "Lae Voorraad Drempel",
-    "lowStockThresholdDescription": "Dae voor voorraad raak op",
+    "lowStockThresholdDescription": "Dae voor voorraad opraak",
     "accessibility": "Toeganklikheid",
     "largeText": "Groot Teks",
     "highContrast": "Hoë Kontras",
@@ -145,7 +185,9 @@
     "version": "Weergawe",
     "privacyPolicy": "Privaatheid Beleid",
     "termsOfService": "Diens Voorwaardes",
-    "contactSupport": "Kontak Ondersteuning"
+    "contactSupport": "Kontak Ondersteuning",
+    "settingCount": "{{count}} instelling",
+    "settingCount_plural": "{{count}} instellings"
   },
   "alerts": {
     "deleteMedication": "Verwyder Medikasie",
@@ -157,17 +199,21 @@
     "markAsMissed": "Merk as Gemis",
     "markAsMissedMessage": "Merk {{medication}} as gemis vir {{time}}?",
     "skipDose": "Slaan Dosis Oor",
-    "skipDoseMessage": "Slaan {{medication}} oor vir {{time}}?"
+    "skipDoseMessage": "Slaan {{medication}} oor vir {{time}}?",
+    "alertCount": "{{count}} waarskuwing",
+    "alertCount_plural": "{{count}} waarskuwings"
   },
   "errors": {
-    "general": "Iets het verkeerd geloop. Probeer asseblief weer.",
+    "general": "Iets het verkeerd gegaan. Probeer asseblief weer.",
     "network": "Netwerk fout. Kontroleer asseblief jou verbinding.",
     "permission": "Toestemming geweier. Aktiveer asseblief kennisgewings in instellings.",
     "validation": "Kontroleer asseblief jou inset en probeer weer.",
     "required": "Hierdie veld is verpligtend",
     "invalidDate": "Ongeldige datum",
     "invalidTime": "Ongeldige tyd",
-    "invalidQuantity": "Ongeldige hoeveelheid"
+    "invalidQuantity": "Ongeldige hoeveelheid",
+    "errorCount": "{{count}} fout",
+    "errorCount_plural": "{{count}} foute"
   },
   "success": {
     "medicationAdded": "Medikasie suksesvol bygevoeg",
@@ -176,6 +222,41 @@
     "doseMarked": "Dosis suksesvol gemerk",
     "settingsSaved": "Instellings suksesvol gestoor",
     "dataExported": "Data suksesvol geëksporteer",
-    "dataImported": "Data suksesvol geïmporteer"
+    "dataImported": "Data suksesvol geïmporteer",
+    "successCount": "{{count}} sukses",
+    "successCount_plural": "{{count}} suksesse"
+  },
+  "medical": {
+    "prescription": "Voorskrif",
+    "overTheCounter": "Sonder Voorskrif",
+    "supplement": "Aanvulling",
+    "vitamin": "Vitamien",
+    "antibiotic": "Antibiotikum",
+    "painkiller": "Pynstiller",
+    "bloodPressure": "Bloeddruk",
+    "diabetes": "Diabetes",
+    "heart": "Hart",
+    "cholesterol": "Cholesterol",
+    "asthma": "Asma",
+    "allergy": "Allergie",
+    "sideEffects": "Newe-effekte",
+    "contraindications": "Kontra-indikasies",
+    "interactions": "Geneesmiddel Interaksies",
+    "dosageInstructions": "Dosis Instruksies",
+    "takeWithFood": "Neem met kos",
+    "takeOnEmptyStomach": "Neem op leë maag",
+    "avoidAlcohol": "Vermy alkohol",
+    "avoidDairy": "Vermy suiwelprodukte",
+    "storeInRefrigerator": "Stoor in yskas",
+    "keepAtRoomTemperature": "Hou by kamertemperatuur",
+    "shakeWell": "Skud goed voor gebruik",
+    "doNotCrush": "Moenie fynstamp of kou nie",
+    "takeAtBedtime": "Neem voor slaaptyd",
+    "takeInMorning": "Neem in die oggend",
+    "takeWithMeal": "Neem met maaltyd",
+    "prescriptionCount": "{{count}} voorskrif",
+    "prescriptionCount_plural": "{{count}} voorskrifte",
+    "sideEffectCount": "{{count}} newe-effek",
+    "sideEffectCount_plural": "{{count}} newe-effekte"
   }
 } 

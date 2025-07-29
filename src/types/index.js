@@ -39,11 +39,43 @@ export const NOTIFICATION_TYPES = {
   LOW_STOCK: 'low_stock',
   REFILL_REMINDER: 'refill_reminder',
   MISSED_DOSE: 'missed_dose',
+  STOCK_ALERT: 'stock_alert',
+  EXPIRATION_WARNING: 'expiration_warning',
 };
 
 export const LANGUAGES = {
   ENGLISH: 'en',
   AFRIKAANS: 'af',
+};
+
+// Intelligent Stock Tracking Types
+export const INTEGRATION_TYPES = {
+  API: 'api',
+  EDI: 'edi',
+  WEBHOOK: 'webhook',
+  MANUAL: 'manual',
+};
+
+export const INTEGRATION_STATUS = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+  TESTING: 'testing',
+  ERROR: 'error',
+};
+
+export const STOCK_ALERT_PRIORITIES = {
+  LOW: 'low',
+  MEDIUM: 'medium',
+  HIGH: 'high',
+  CRITICAL: 'critical',
+};
+
+export const STOCK_ALERT_TYPES = {
+  LOW_STOCK: 'low_stock',
+  EXPIRING_SOON: 'expiring_soon',
+  OUT_OF_STOCK: 'out_of_stock',
+  USAGE_SPIKE: 'usage_spike',
+  PREDICTION_ALERT: 'prediction_alert',
 };
 
 // Medication Object Structure
@@ -57,6 +89,7 @@ export const createMedication = ({
   instructions = '',
   stockLevel = STOCK_LEVELS.FULL,
   stockQuantity = 0,
+  pillCount = 0, // Added for backend compatibility
   refillReminder = false,
   refillQuantity = 0,
   startDate = new Date(),
@@ -64,6 +97,27 @@ export const createMedication = ({
   isActive = true,
   createdAt = new Date(),
   updatedAt = new Date(),
+  // Intelligent stock tracking fields
+  expirationDate = null,
+  batchNumber = '',
+  supplier = '',
+  cost = 0,
+  autoOrder = false,
+  autoOrderThreshold = 7,
+  autoOrderQuantity = 30,
+  lastStockUpdate = new Date(),
+  usagePattern = {
+    daily: 0,
+    weekly: 0,
+    monthly: 0,
+    volatility: 0,
+  },
+  stockPrediction = {
+    daysUntilStockout: 0,
+    confidence: 0,
+    recommendedOrderDate: null,
+    recommendedOrderQuantity: 0,
+  },
 }) => ({
   id,
   name,
@@ -74,6 +128,7 @@ export const createMedication = ({
   instructions,
   stockLevel,
   stockQuantity,
+  pillCount,
   refillReminder,
   refillQuantity,
   startDate,
@@ -81,6 +136,150 @@ export const createMedication = ({
   isActive,
   createdAt,
   updatedAt,
+  expirationDate,
+  batchNumber,
+  supplier,
+  cost,
+  autoOrder,
+  autoOrderThreshold,
+  autoOrderQuantity,
+  lastStockUpdate,
+  usagePattern,
+  stockPrediction,
+});
+
+// Stock Analytics Object Structure
+export const createStockAnalytics = ({
+  medicationId = null,
+  currentStock = 0,
+  daysUntilStockout = 0,
+  dailyUsageRate = 0,
+  weeklyUsageRate = 0,
+  monthlyUsageRate = 0,
+  usageVolatility = 0,
+  recommendedOrderQuantity = 0,
+  recommendedOrderDate = null,
+  predictionConfidence = 0,
+  lastUpdated = new Date(),
+  warnings = [],
+  trends = {
+    stockLevel: [],
+    usageRate: [],
+    predictionAccuracy: [],
+  },
+}) => ({
+  medicationId,
+  currentStock,
+  daysUntilStockout,
+  dailyUsageRate,
+  weeklyUsageRate,
+  monthlyUsageRate,
+  usageVolatility,
+  recommendedOrderQuantity,
+  recommendedOrderDate,
+  predictionConfidence,
+  lastUpdated,
+  warnings,
+  trends,
+});
+
+// Pharmacy Integration Object Structure
+export const createPharmacyIntegration = ({
+  id = null,
+  name = '',
+  pharmacyName = '',
+  integrationType = INTEGRATION_TYPES.API,
+  apiEndpoint = '',
+  apiKey = '',
+  webhookUrl = '',
+  status = INTEGRATION_STATUS.INACTIVE,
+  autoOrder = false,
+  autoOrderThreshold = 7,
+  autoOrderLeadTime = 3,
+  lastSync = null,
+  syncFrequency = 'daily',
+  credentials = {},
+  settings = {},
+  createdAt = new Date(),
+  updatedAt = new Date(),
+}) => ({
+  id,
+  name,
+  pharmacyName,
+  integrationType,
+  apiEndpoint,
+  apiKey,
+  webhookUrl,
+  status,
+  autoOrder,
+  autoOrderThreshold,
+  autoOrderLeadTime,
+  lastSync,
+  syncFrequency,
+  credentials,
+  settings,
+  createdAt,
+  updatedAt,
+});
+
+// Stock Alert Object Structure
+export const createStockAlert = ({
+  id = null,
+  medicationId = null,
+  type = STOCK_ALERT_TYPES.LOW_STOCK,
+  priority = STOCK_ALERT_PRIORITIES.MEDIUM,
+  title = '',
+  message = '',
+  currentStock = 0,
+  threshold = 0,
+  isRead = false,
+  isResolved = false,
+  createdAt = new Date(),
+  resolvedAt = null,
+  actionTaken = '',
+}) => ({
+  id,
+  medicationId,
+  type,
+  priority,
+  title,
+  message,
+  currentStock,
+  threshold,
+  isRead,
+  isResolved,
+  createdAt,
+  resolvedAt,
+  actionTaken,
+});
+
+// Stock Transaction Object Structure
+export const createStockTransaction = ({
+  id = null,
+  medicationId = null,
+  type = 'adjustment', // adjustment, usage, order, delivery, expiration
+  quantity = 0,
+  previousStock = 0,
+  newStock = 0,
+  reason = '',
+  notes = '',
+  transactionDate = new Date(),
+  batchNumber = '',
+  cost = 0,
+  supplier = '',
+}) => ({
+  id,
+  medicationId,
+  type,
+  quantity,
+  previousStock,
+  newStock,
+  reason,
+  notes,
+  transactionDate,
+  batchNumber,
+  cost,
+  supplier,
 });
 
 // Schedule Object Structure
@@ -135,6 +334,17 @@ export const createAppSettings = ({
     highContrast: false,
     screenReader: false,
   },
+  // Intelligent stock tracking settings
+  stockTrackingEnabled = true,
+  autoOrderEnabled = false,
+  predictionEnabled = true,
+  alertThresholds = {
+    lowStock: 7,
+    criticalStock: 3,
+    expirationWarning: 30,
+  },
+  syncFrequency = 'daily',
+  analyticsEnabled = true,
 }) => ({
   language,
   notificationsEnabled,
@@ -142,4 +352,10 @@ export const createAppSettings = ({
   lowStockThreshold,
   theme,
   accessibility,
+  stockTrackingEnabled,
+  autoOrderEnabled,
+  predictionEnabled,
+  alertThresholds,
+  syncFrequency,
+  analyticsEnabled,
 }); 

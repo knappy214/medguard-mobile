@@ -7,6 +7,12 @@ const STORAGE_KEYS = {
   LANGUAGE: 'medguard_language',
   APP_SETTINGS: 'medguard_app_settings',
   USER_DATA: 'medguard_user_data',
+  // Intelligent stock tracking keys
+  STOCK_ANALYTICS: 'medguard_stock_analytics',
+  PHARMACY_INTEGRATIONS: 'medguard_pharmacy_integrations',
+  STOCK_ALERTS: 'medguard_stock_alerts',
+  STOCK_TRANSACTIONS: 'medguard_stock_transactions',
+  STOCK_VISUALIZATIONS: 'medguard_stock_visualizations',
 };
 
 class StorageService {
@@ -71,6 +77,171 @@ class StorageService {
     return schedules || [];
   }
 
+  // Intelligent Stock Tracking Methods
+
+  // Stock Analytics
+  async saveStockAnalytics(analytics) {
+    return this.setItem(STORAGE_KEYS.STOCK_ANALYTICS, analytics);
+  }
+
+  async getStockAnalytics() {
+    const analytics = await this.getItem(STORAGE_KEYS.STOCK_ANALYTICS);
+    return analytics || [];
+  }
+
+  async getStockAnalyticsForMedication(medicationId) {
+    const analytics = await this.getStockAnalytics();
+    return analytics.find(a => a.medicationId === medicationId) || null;
+  }
+
+  async updateStockAnalytics(medicationId, analyticsData) {
+    const analytics = await this.getStockAnalytics();
+    const existingIndex = analytics.findIndex(a => a.medicationId === medicationId);
+    
+    if (existingIndex >= 0) {
+      analytics[existingIndex] = { ...analytics[existingIndex], ...analyticsData };
+    } else {
+      analytics.push({ medicationId, ...analyticsData });
+    }
+    
+    return this.saveStockAnalytics(analytics);
+  }
+
+  // Pharmacy Integrations
+  async savePharmacyIntegrations(integrations) {
+    return this.setItem(STORAGE_KEYS.PHARMACY_INTEGRATIONS, integrations);
+  }
+
+  async getPharmacyIntegrations() {
+    const integrations = await this.getItem(STORAGE_KEYS.PHARMACY_INTEGRATIONS);
+    return integrations || [];
+  }
+
+  async addPharmacyIntegration(integration) {
+    const integrations = await this.getPharmacyIntegrations();
+    integrations.push(integration);
+    return this.savePharmacyIntegrations(integrations);
+  }
+
+  async updatePharmacyIntegration(id, updates) {
+    const integrations = await this.getPharmacyIntegrations();
+    const index = integrations.findIndex(i => i.id === id);
+    
+    if (index >= 0) {
+      integrations[index] = { ...integrations[index], ...updates };
+      return this.savePharmacyIntegrations(integrations);
+    }
+    return false;
+  }
+
+  async deletePharmacyIntegration(id) {
+    const integrations = await this.getPharmacyIntegrations();
+    const filtered = integrations.filter(i => i.id !== id);
+    return this.savePharmacyIntegrations(filtered);
+  }
+
+  // Stock Alerts
+  async saveStockAlerts(alerts) {
+    return this.setItem(STORAGE_KEYS.STOCK_ALERTS, alerts);
+  }
+
+  async getStockAlerts() {
+    const alerts = await this.getItem(STORAGE_KEYS.STOCK_ALERTS);
+    return alerts || [];
+  }
+
+  async addStockAlert(alert) {
+    const alerts = await this.getStockAlerts();
+    alerts.push(alert);
+    return this.saveStockAlerts(alerts);
+  }
+
+  async updateStockAlert(id, updates) {
+    const alerts = await this.getStockAlerts();
+    const index = alerts.findIndex(a => a.id === id);
+    
+    if (index >= 0) {
+      alerts[index] = { ...alerts[index], ...updates };
+      return this.saveStockAlerts(alerts);
+    }
+    return false;
+  }
+
+  async deleteStockAlert(id) {
+    const alerts = await this.getStockAlerts();
+    const filtered = alerts.filter(a => a.id !== id);
+    return this.saveStockAlerts(filtered);
+  }
+
+  async getUnreadStockAlerts() {
+    const alerts = await this.getStockAlerts();
+    return alerts.filter(a => !a.isRead);
+  }
+
+  async markStockAlertAsRead(id) {
+    return this.updateStockAlert(id, { isRead: true });
+  }
+
+  async markStockAlertAsResolved(id, actionTaken = '') {
+    return this.updateStockAlert(id, { 
+      isResolved: true, 
+      resolvedAt: new Date().toISOString(),
+      actionTaken 
+    });
+  }
+
+  // Stock Transactions
+  async saveStockTransactions(transactions) {
+    return this.setItem(STORAGE_KEYS.STOCK_TRANSACTIONS, transactions);
+  }
+
+  async getStockTransactions() {
+    const transactions = await this.getItem(STORAGE_KEYS.STOCK_TRANSACTIONS);
+    return transactions || [];
+  }
+
+  async addStockTransaction(transaction) {
+    const transactions = await this.getStockTransactions();
+    transactions.push(transaction);
+    return this.saveStockTransactions(transactions);
+  }
+
+  async getStockTransactionsForMedication(medicationId, limit = 50) {
+    const transactions = await this.getStockTransactions();
+    return transactions
+      .filter(t => t.medicationId === medicationId)
+      .sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate))
+      .slice(0, limit);
+  }
+
+  // Stock Visualizations
+  async saveStockVisualizations(visualizations) {
+    return this.setItem(STORAGE_KEYS.STOCK_VISUALIZATIONS, visualizations);
+  }
+
+  async getStockVisualizations() {
+    const visualizations = await this.getItem(STORAGE_KEYS.STOCK_VISUALIZATIONS);
+    return visualizations || [];
+  }
+
+  async getStockVisualizationForMedication(medicationId) {
+    const visualizations = await this.getStockVisualizations();
+    return visualizations.find(v => v.medicationId === medicationId) || null;
+  }
+
+  async updateStockVisualization(medicationId, visualizationData) {
+    const visualizations = await this.getStockVisualizations();
+    const existingIndex = visualizations.findIndex(v => v.medicationId === medicationId);
+    
+    if (existingIndex >= 0) {
+      visualizations[existingIndex] = { ...visualizations[existingIndex], ...visualizationData };
+    } else {
+      visualizations.push({ medicationId, ...visualizationData });
+    }
+    
+    return this.saveStockVisualizations(visualizations);
+  }
+
   // Notification settings
   async saveNotificationSettings(settings) {
     return this.setItem(STORAGE_KEYS.NOTIFICATION_SETTINGS, settings);
@@ -85,6 +256,11 @@ class StorageService {
       refillReminderDays: 3,
       soundEnabled: true,
       vibrationEnabled: true,
+      // Intelligent stock tracking notification settings
+      stockAlertsEnabled: true,
+      expirationWarningsEnabled: true,
+      predictionAlertsEnabled: true,
+      autoOrderNotificationsEnabled: true,
     };
   }
 
@@ -111,6 +287,17 @@ class StorageService {
       reducedMotion: false,
       autoBackup: true,
       backupFrequency: 'weekly',
+      // Intelligent stock tracking settings
+      stockTrackingEnabled: true,
+      autoOrderEnabled: false,
+      predictionEnabled: true,
+      alertThresholds: {
+        lowStock: 7,
+        criticalStock: 3,
+        expirationWarning: 30,
+      },
+      syncFrequency: 'daily',
+      analyticsEnabled: true,
     };
   }
 
@@ -140,8 +327,14 @@ class StorageService {
         language: await this.getLanguage(),
         appSettings: await this.getAppSettings(),
         userData: await this.getUserData(),
+        // Intelligent stock tracking data
+        stockAnalytics: await this.getStockAnalytics(),
+        pharmacyIntegrations: await this.getPharmacyIntegrations(),
+        stockAlerts: await this.getStockAlerts(),
+        stockTransactions: await this.getStockTransactions(),
+        stockVisualizations: await this.getStockVisualizations(),
         exportDate: new Date().toISOString(),
-        version: '1.0.0',
+        version: '2.0.0',
       };
       return data;
     } catch (error) {
@@ -169,6 +362,22 @@ class StorageService {
       }
       if (data.userData) {
         await this.saveUserData(data.userData);
+      }
+      // Import intelligent stock tracking data
+      if (data.stockAnalytics) {
+        await this.saveStockAnalytics(data.stockAnalytics);
+      }
+      if (data.pharmacyIntegrations) {
+        await this.savePharmacyIntegrations(data.pharmacyIntegrations);
+      }
+      if (data.stockAlerts) {
+        await this.saveStockAlerts(data.stockAlerts);
+      }
+      if (data.stockTransactions) {
+        await this.saveStockTransactions(data.stockTransactions);
+      }
+      if (data.stockVisualizations) {
+        await this.saveStockVisualizations(data.stockVisualizations);
       }
       return true;
     } catch (error) {

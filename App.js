@@ -17,6 +17,7 @@ import MedicationListScreen from './src/screens/MedicationListScreen';
 import AddMedicationScreen from './src/screens/AddMedicationScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import MedicationDetailScreen from './src/screens/MedicationDetailScreen';
+import StockAnalyticsScreen from './src/screens/StockAnalyticsScreen';
 
 // Import context providers
 import { NotificationProvider } from './src/contexts/NotificationContext';
@@ -70,6 +71,8 @@ function TabNavigator() {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'Medications') {
             iconName = focused ? 'medical' : 'medical-outline';
+          } else if (route.name === 'StockAnalytics') {
+            iconName = focused ? 'analytics' : 'analytics-outline';
           } else if (route.name === 'Settings') {
             iconName = focused ? 'settings' : 'settings-outline';
           }
@@ -96,6 +99,11 @@ function TabNavigator() {
         name="Medications" 
         component={MedicationListScreen}
         options={{ title: t('navigation.medications') }}
+      />
+      <Tab.Screen 
+        name="StockAnalytics" 
+        component={StockAnalyticsScreen}
+        options={{ title: t('medication.stockAnalytics.title') }}
       />
       <Tab.Screen 
         name="Settings" 
@@ -129,10 +137,13 @@ function MainNavigator() {
       <Stack.Screen 
         name="AddMedication" 
         component={AddMedicationScreen}
-        options={{ title: t('navigation.addMedication') }}
+        options={{ 
+          title: t('navigation.addMedication'),
+          presentation: 'modal'
+        }}
       />
       <Stack.Screen 
-        name="MedicationDetail" 
+        name="MedicationDetails" 
         component={MedicationDetailScreen}
         options={{ title: t('navigation.medicationDetails') }}
       />
@@ -141,37 +152,39 @@ function MainNavigator() {
 }
 
 function AppContent() {
-  const { isLoading, isInitialized } = useLanguage();
+  const [isReady, setIsReady] = useState(false);
   const [expoPushToken, setExpoPushToken] = useState('');
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then(token => {
-      if (token) setExpoPushToken(token);
-    });
+    async function prepare() {
+      try {
+        // Register for push notifications
+        if (Device.isDevice) {
+          const token = await registerForPushNotificationsAsync();
+          setExpoPushToken(token);
+        }
 
-    const notificationListener = Notifications.addNotificationReceivedListener(notification => {
-      console.log('Notification received:', notification);
-    });
+        // Add any other initialization logic here
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading
+        
+        setIsReady(true);
+      } catch (error) {
+        console.warn('Error during app initialization:', error);
+        setIsReady(true); // Continue anyway
+      }
+    }
 
-    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('Notification response:', response);
-    });
-
-    return () => {
-      notificationListener.remove();
-      responseListener.remove();
-    };
+    prepare();
   }, []);
 
-  // Show loading screen while i18n is initializing
-  if (isLoading || !isInitialized) {
+  if (!isReady) {
     return <LoadingScreen />;
   }
 
   return (
     <NavigationContainer>
-      <StatusBar style="light" />
       <MainNavigator />
+      <StatusBar style="light" />
     </NavigationContainer>
   );
 }
@@ -194,12 +207,11 @@ async function registerForPushNotificationsAsync() {
   let token;
 
   if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('medication-reminders', {
-      name: 'Medication Reminders',
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#2563EB',
-      sound: 'default',
+      lightColor: '#FF231F7C',
     });
   }
 
@@ -211,29 +223,14 @@ async function registerForPushNotificationsAsync() {
       finalStatus = status;
     }
     if (finalStatus !== 'granted') {
-      console.log('Failed to get push token for push notification!');
+      alert('Failed to get push token for push notification!');
       return;
     }
-    
-    try {
-      // For Expo Go, we need to handle the case where project ID might not be available
-      const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? 
-                       Constants?.easConfig?.projectId ?? 
-                       Constants?.manifest?.extra?.eas?.projectId;
-      
-      if (!projectId) {
-        console.log('Project ID not found - notifications will work locally but not for push notifications');
-        return;
-      }
-      
-      token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-      console.log('Push token:', token);
-    } catch (e) {
-      console.error('Error getting push token:', e);
-      // Don't throw - allow app to continue without push notifications
-    }
+    token = (await Notifications.getExpoPushTokenAsync({
+      projectId: Constants.expoConfig.extra.eas.projectId,
+    })).data;
   } else {
-    console.log('Must use physical device for Push Notifications');
+    alert('Must use physical device for Push Notifications');
   }
 
   return token;

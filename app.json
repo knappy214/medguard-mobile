@@ -4,45 +4,39 @@
     "slug": "medguard-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/medguard-logo.svg",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/medguard-logo.svg",
       "resizeMode": "contain",
       "backgroundColor": "#2563EB"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.medguard.sa.mobile"
+      "bundleIdentifier": "com.medguard.sa.mobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/medguard-logo.svg",
         "backgroundColor": "#2563EB"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.medguard.sa.mobile"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/medguard-logo.svg"
     },
     "plugins": [
-      "expo-localization",
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/notification-icon.png",
-          "color": "#2563EB"
-        }
-      ]
+      "expo-localization"
     ],
-    "notification": {
-      "icon": "./assets/notification-icon.png",
-      "color": "#2563EB",
-      "iosDisplayInForeground": true,
-      "androidMode": "default",
-      "androidCollapsedTitle": "MedGuard SA"
+    "extra": {
+      "eas": {
+        "projectId": "66b89b4f-56df-4fd2-a12f-135b3bac185a"
+      }
     }
   }
 }

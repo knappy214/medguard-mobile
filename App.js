@@ -4,12 +4,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
-import Constants from 'expo-constants';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './src/i18n/config';
-import { Platform, View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import Logo from './src/components/Logo';
 
 // Import screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -27,36 +25,59 @@ import { LanguageProvider, useLanguage } from './src/contexts/LanguageContext';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-// Configure notification handler
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Notification handler removed for Expo Go compatibility
 
 // Loading component
 const LoadingScreen = () => (
-  <View style={{ 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5'
-  }}>
-    <ActivityIndicator size="large" color="#2563EB" />
-    <Text style={{ 
-      marginTop: 16, 
-      fontSize: 16, 
-      color: '#666',
-      textAlign: 'center'
-    }}>
-      Loading MedGuard...
-    </Text>
+  <View style={styles.loadingContainer}>
+    <View style={styles.loadingContent}>
+      {/* Animated Logo */}
+      <View style={styles.logoContainer}>
+        <Logo size="xl" showText={false} />
+      </View>
+      
+      {/* Loading Message */}
+      <Text style={styles.loadingText}>
+        Loading MedGuard SA...
+      </Text>
+      
+      {/* Loading Spinner */}
+      <ActivityIndicator size="large" color="#2563EB" style={styles.spinner} />
+      
+      {/* Brand Text */}
+      <View style={styles.brandContainer}>
+        <Logo size="lg" />
+      </View>
+    </View>
   </View>
 );
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  loadingContent: {
+    alignItems: 'center',
+  },
+  logoContainer: {
+    marginBottom: 32,
+  },
+  loadingText: {
+    marginBottom: 16,
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
+  spinner: {
+    marginBottom: 32,
+  },
+  brandContainer: {
+    alignItems: 'center',
+  },
+});
 
 function TabNavigator() {
   const { t } = useLanguage();
@@ -153,20 +174,16 @@ function MainNavigator() {
 
 function AppContent() {
   const [isReady, setIsReady] = useState(false);
-  const [expoPushToken, setExpoPushToken] = useState('');
 
   useEffect(() => {
     async function prepare() {
       try {
-        // Register for push notifications
-        if (Device.isDevice) {
-          const token = await registerForPushNotificationsAsync();
-          setExpoPushToken(token);
-        }
-
-        // Add any other initialization logic here
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading
+        console.log('Starting app initialization...');
         
+        // Simple loading simulation
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        console.log('App initialization complete');
         setIsReady(true);
       } catch (error) {
         console.warn('Error during app initialization:', error);
@@ -203,35 +220,4 @@ export default function App() {
   );
 }
 
-async function registerForPushNotificationsAsync() {
-  let token;
-
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
-    });
-  }
-
-  if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== 'granted') {
-      alert('Failed to get push token for push notification!');
-      return;
-    }
-    token = (await Notifications.getExpoPushTokenAsync({
-      projectId: Constants.expoConfig.extra.eas.projectId,
-    })).data;
-  } else {
-    alert('Must use physical device for Push Notifications');
-  }
-
-  return token;
-}
+// Notification functions removed for Expo Go compatibility

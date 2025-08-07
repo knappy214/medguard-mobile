@@ -1,39 +1,76 @@
 {
   "expo": {
     "name": "MedGuard SA",
-    "slug": "medguard-mobile",
+    "slug": "medguard-sa-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/medguard-logo.svg",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/medguard-logo.svg",
+      "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#2563EB"
     },
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.medguard.sa.mobile",
+      "bundleIdentifier": "com.medguardsa.mobile",
+      "buildNumber": "1.0.0",
       "infoPlist": {
+        "NSCameraUsageDescription": "MedGuard SA needs camera access to scan prescription barcodes and medication labels",
+        "NSMicrophoneUsageDescription": "MedGuard SA needs microphone access for voice medication reminders",
+        "NSCalendarsUsageDescription": "MedGuard SA needs calendar access to schedule medication reminders",
+        "NSRemindersUsageDescription": "MedGuard SA needs reminder access to set medication alerts",
+        "NSLocationWhenInUseUsageDescription": "MedGuard SA needs location access to find nearby pharmacies",
+        "NSFaceIDUsageDescription": "MedGuard SA uses Face ID for secure access to your medical information",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/medguard-logo.svg",
+        "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#2563EB"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.medguard.sa.mobile"
+      "package": "com.medguardsa.mobile",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_CALENDAR",
+        "WRITE_CALENDAR",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "USE_FINGERPRINT",
+        "USE_BIOMETRIC",
+        "SCHEDULE_EXACT_ALARM"
+      ]
     },
     "web": {
-      "favicon": "./assets/medguard-logo.svg"
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-localization"
+      "expo-secure-store",
+      "expo-notifications",
+      "expo-calendar",
+      "expo-local-authentication",
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#2563EB",
+          "sounds": [
+            "./assets/sounds/medication-reminder.wav",
+            "./assets/sounds/urgent-alert.wav"
+          ]
+        }
+      ]
     ],
     "extra": {
+      "apiUrl": "https://api.medguard-sa.com",
+      "wagtailApiUrl": "https://api.medguard-sa.com/api/v2",
       "eas": {
         "projectId": "66b89b4f-56df-4fd2-a12f-135b3bac185a"
       }

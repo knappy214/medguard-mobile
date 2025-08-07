@@ -39,6 +39,9 @@ import i18n from '../../i18n';
 import { MedGuardColors } from '../../theme/colors';
 import { Spacing } from '../../theme/typography';
 
+// Components
+import MedicationCard from '../../components/medications/MedicationCard';
+
 // Types
 interface Medication {
   id: number;
@@ -68,6 +71,9 @@ const AlertIcon = (props: IconProps) => <Icon {...props} name='alert-circle-outl
 const CheckIcon = (props: IconProps) => <Icon {...props} name='checkmark-circle-outline' />;
 const CloseIcon = (props: IconProps) => <Icon {...props} name='close-outline' />;
 
+// Performance optimization constants
+const MEDICATIONS_PER_PAGE = 20;
+
 const MedicationsScreen: React.FC = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const [medications, setMedications] = useState<Medication[]>([]);
@@ -77,6 +83,10 @@ const MedicationsScreen: React.FC = ({ navigation }: any) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<IndexPath>(new IndexPath(0));
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // Filter options
   const filterOptions = [
@@ -170,51 +180,34 @@ const MedicationsScreen: React.FC = ({ navigation }: any) => {
     }
 
     setFilteredMedications(filtered);
+    // Reset pagination when filters change
+    setCurrentPage(1);
   }, [medications, searchQuery, selectedFilter]);
 
-  const getMedicationStatusColor = (medication: Medication): string => {
-    if (medication.expirationDate) {
-      const now = new Date();
-      const expiryDate = parseISO(medication.expirationDate);
-      
-      if (isAfter(now, expiryDate)) {
-        return MedGuardColors.alerts.criticalRed;
-      }
-      
-      const daysUntilExpiry = differenceInDays(expiryDate, now);
-      if (daysUntilExpiry <= 30) {
-        return MedGuardColors.alerts.warningAmber;
-      }
-    }
-    
-    if (medication.pillCount <= medication.lowStockThreshold) {
-      return MedGuardColors.alerts.warningAmber;
-    }
-    
-    return MedGuardColors.alerts.successGreen;
-  };
+  // Memoized pagination for large datasets
+  const paginatedMedications = useMemo(() => 
+    filteredMedications.slice(0, currentPage * MEDICATIONS_PER_PAGE), 
+    [filteredMedications, currentPage]
+  );
 
-  const getMedicationStatusText = (medication: Medication): string => {
-    if (medication.expirationDate) {
-      const now = new Date();
-      const expiryDate = parseISO(medication.expirationDate);
-      
-      if (isAfter(now, expiryDate)) {
-        return i18n.t('medications.expired');
-      }
-      
-      const daysUntilExpiry = differenceInDays(expiryDate, now);
-      if (daysUntilExpiry <= 30) {
-        return i18n.t('alerts.expires_in_days', { days: daysUntilExpiry });
-      }
+  const hasMoreData = useMemo(() => 
+    filteredMedications.length > currentPage * MEDICATIONS_PER_PAGE,
+    [filteredMedications.length, currentPage]
+  );
+
+  const loadMoreData = useCallback(() => {
+    if (!loadingMore && hasMoreData) {
+      setLoadingMore(true);
+      // Simulate async loading with setTimeout to prevent blocking
+      setTimeout(() => {
+        setCurrentPage(prev => prev + 1);
+        setLoadingMore(false);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }, 100);
     }
-    
-    if (medication.pillCount <= medication.lowStockThreshold) {
-      return i18n.t('medications.low_stock');
-    }
-    
-    return i18n.getPluralForm(medication.pillCount, 'pill_counting.pill');
-  };
+  }, [loadingMore, hasMoreData]);
+
+  // Note: Status color and text logic moved to MedicationCard component for better performance
 
   const navigateToAddMedication = () => {
     navigation.navigate('AddMedication');
@@ -224,41 +217,19 @@ const MedicationsScreen: React.FC = ({ navigation }: any) => {
     navigation.navigate('Camera');
   };
 
-  const navigateToMedicationDetail = (medicationId: number) => {
+  const navigateToMedicationDetail = useCallback((medicationId: number) => {
     navigation.navigate('MedicationDetail', { medicationId });
-  };
+  }, [navigation]);
 
-  const renderMedicationItem = ({ item }: { item: Medication }) => {
-    const statusColor = getMedicationStatusColor(item);
-    const statusText = getMedicationStatusText(item);
-    
-    return (
-      <ListItem
-        title={item.name}
-        description={`${item.strength} - ${statusText}`}
-        accessoryLeft={() => (
-          <Avatar
-            source={item.medicationImage ? { uri: item.medicationImage } : undefined}
-            style={[styles.medicationAvatar, { backgroundColor: statusColor }]}
-          />
-        )}
-        accessoryRight={() => (
-          <View style={styles.medicationMeta}>
-            <Text category="caption1" appearance="hint">
-              {i18n.formatNumber(item.pillCount)}
-            </Text>
-            <Icon
-              name="chevron-right"
-              style={styles.chevronIcon}
-              fill={MedGuardColors.extended.mediumGray}
-            />
-          </View>
-        )}
-        onPress={() => navigateToMedicationDetail(item.id)}
-        style={styles.medicationItem}
-      />
-    );
-  };
+  // Optimized render function with useCallback for better FlatList performance
+  const renderMedicationItem = useCallback(({ item, index }: { item: Medication; index: number }) => (
+    <MedicationCard 
+      key={item.id}
+      medication={item}
+      index={index}
+      onPress={navigateToMedicationDetail}
+    />
+  ), [navigateToMedicationDetail]);
 
   const renderEmptyState = () => (
     <Layout style={styles.emptyState}>
@@ -379,7 +350,7 @@ const MedicationsScreen: React.FC = ({ navigation }: any) => {
       {/* Medications List */}
       {filteredMedications.length > 0 ? (
         <FlatList
-          data={filteredMedications}
+          data={paginatedMedications}
           renderItem={renderMedicationItem}
           keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={() => <Divider />}
@@ -391,7 +362,33 @@ const MedicationsScreen: React.FC = ({ navigation }: any) => {
               tintColor={MedGuardColors.primary.trustBlue}
             />
           }
+          onEndReached={loadMoreData}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() => {
+            if (loadingMore) {
+              return (
+                <View style={styles.loadingMoreContainer}>
+                  <Spinner size="small" />
+                  <Text category="caption1" appearance="hint" style={styles.loadingMoreText}>
+                    {i18n.t('common.loading_more')}
+                  </Text>
+                </View>
+              );
+            }
+            return null;
+          }}
           contentContainerStyle={styles.listContainer}
+          // Performance optimizations
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          updateCellsBatchingPeriod={50}
+          initialNumToRender={15}
+          windowSize={10}
+          getItemLayout={(data, index) => ({
+            length: 72, // Approximate item height
+            offset: 72 * index,
+            index,
+          })}
         />
       ) : (
         renderEmptyState()
@@ -420,23 +417,17 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingBottom: Spacing.xl,
   },
-  medicationItem: {
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-  },
-  medicationAvatar: {
-    width: 48,
-    height: 48,
-  },
-  medicationMeta: {
-    alignItems: 'flex-end',
+  loadingMoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 16,
+    gap: 8,
   },
-  chevronIcon: {
-    width: 16,
-    height: 16,
-    marginTop: Spacing.xs,
+  loadingMoreText: {
+    marginLeft: 8,
   },
+  // Note: Medication item styles moved to MedicationCard component
   centerContent: {
     flex: 1,
     justifyContent: 'center',

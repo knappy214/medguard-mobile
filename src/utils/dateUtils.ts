@@ -428,3 +428,69 @@ export const convertTo12Hour = (time24h: string): string => {
     return `${hour24 - 12}:${minutes} PM`;
   }
 };
+
+/**
+ * Memoized medication expiration date formatter
+ * Optimized for frequent re-renders in FlatList components
+ */
+const medicationDateCache = new Map<string, string>();
+
+export const formatMedicationDate = (
+  expirationDate: string | undefined,
+  locale: SupportedLocale = 'en-ZA'
+): string => {
+  if (!expirationDate) return '';
+  
+  const cacheKey = `${expirationDate}-${locale}`;
+  
+  if (medicationDateCache.has(cacheKey)) {
+    return medicationDateCache.get(cacheKey)!;
+  }
+  
+  try {
+    const expDate = new Date(expirationDate);
+    const now = new Date();
+    
+    let formattedDate: string;
+    
+    if (isAfter(now, expDate)) {
+      // Expired
+      formattedDate = locale === 'af-ZA' 
+        ? `Verval: ${formatDate(expDate, 'dd/MM/yyyy', locale)}`
+        : `Expired: ${formatDate(expDate, 'dd/MM/yyyy', locale)}`;
+    } else {
+      const daysUntilExpiry = differenceInDays(expDate, now);
+      
+      if (daysUntilExpiry <= 30) {
+        // Expiring soon
+        const expiryText = locale === 'af-ZA' 
+          ? `Verval oor ${daysUntilExpiry} dag${daysUntilExpiry !== 1 ? 'e' : ''}`
+          : `Expires in ${daysUntilExpiry} day${daysUntilExpiry !== 1 ? 's' : ''}`;
+        formattedDate = expiryText;
+      } else {
+        // Normal expiry date
+        const expiryPrefix = locale === 'af-ZA' ? 'Verval:' : 'Expires:';
+        formattedDate = `${expiryPrefix} ${formatDate(expDate, 'dd/MM/yyyy', locale)}`;
+      }
+    }
+    
+    // Cache the result (limit cache size to prevent memory issues)
+    if (medicationDateCache.size > 1000) {
+      const firstKey = medicationDateCache.keys().next().value;
+      medicationDateCache.delete(firstKey);
+    }
+    
+    medicationDateCache.set(cacheKey, formattedDate);
+    return formattedDate;
+  } catch (error) {
+    console.warn('Error formatting medication date:', error);
+    return expirationDate;
+  }
+};
+
+/**
+ * Clear the medication date cache (useful for locale changes)
+ */
+export const clearMedicationDateCache = (): void => {
+  medicationDateCache.clear();
+};

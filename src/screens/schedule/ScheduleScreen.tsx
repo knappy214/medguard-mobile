@@ -26,6 +26,7 @@ import {
   Select,
   SelectItem,
   IndexPath,
+  Spinner,
 } from '@ui-kitten/components';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { 
@@ -49,38 +50,11 @@ import i18n from '../../i18n';
 import { MedGuardColors } from '../../theme/colors';
 import { Spacing } from '../../theme/typography';
 
-// Types
-interface MedicationSchedule {
-  id: number;
-  medication: any;
-  patient: number;
-  timing: 'morning' | 'noon' | 'night' | 'custom';
-  customTime?: string;
-  dosageAmount: string;
-  frequency: string;
-  monday: boolean;
-  tuesday: boolean;
-  wednesday: boolean;
-  thursday: boolean;
-  friday: boolean;
-  saturday: boolean;
-  sunday: boolean;
-  startDate: string;
-  endDate?: string;
-  status: 'active' | 'inactive' | 'paused' | 'completed';
-  instructions?: string;
-}
+// Components
+import { ScheduleCard, DoseCard } from '../../components/schedule/ScheduleCard';
 
-interface ScheduledDose {
-  id: string;
-  scheduleId: number;
-  medicationId: number;
-  medicationName: string;
-  dosageAmount: string;
-  scheduledTime: Date;
-  status: 'upcoming' | 'taken' | 'missed' | 'overdue';
-  instructions?: string;
-}
+// Types
+import { MedicationSchedule, ScheduledDose } from '../../types/schedule';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -93,6 +67,10 @@ const CheckIcon = (props: IconProps) => <Icon {...props} name='checkmark-circle-
 const AlertIcon = (props: IconProps) => <Icon {...props} name='alert-circle-outline' />;
 const EditIcon = (props: IconProps) => <Icon {...props} name='edit-outline' />;
 
+// Performance optimization constants
+const SCHEDULES_PER_PAGE = 15;
+const DOSES_PER_PAGE = 20;
+
 const ScheduleScreen: React.FC = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const [schedules, setSchedules] = useState<MedicationSchedule[]>([]);
@@ -102,6 +80,12 @@ const ScheduleScreen: React.FC = ({ navigation }: any) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('list');
   const [showActiveOnly, setShowActiveOnly] = useState(true);
+  
+  // Pagination state
+  const [currentSchedulePage, setCurrentSchedulePage] = useState(1);
+  const [currentDosePage, setCurrentDosePage] = useState(1);
+  const [loadingMoreSchedules, setLoadingMoreSchedules] = useState(false);
+  const [loadingMoreDoses, setLoadingMoreDoses] = useState(false);
 
   const locale = i18n.getCurrentLanguage() === 'af' ? af : enZA;
 
@@ -231,9 +215,54 @@ const ScheduleScreen: React.FC = ({ navigation }: any) => {
     // Sort by scheduled time
     doses.sort((a, b) => a.scheduledTime.getTime() - b.scheduledTime.getTime());
     setScheduledDoses(doses);
+    // Reset pagination when doses change
+    setCurrentDosePage(1);
   }, [schedules, selectedDate, showActiveOnly]);
 
-  const markDoseAsTaken = async (dose: ScheduledDose) => {
+  // Memoized pagination for large datasets
+  const paginatedSchedules = useMemo(() => 
+    schedules.slice(0, currentSchedulePage * SCHEDULES_PER_PAGE), 
+    [schedules, currentSchedulePage]
+  );
+
+  const paginatedDoses = useMemo(() => 
+    scheduledDoses.slice(0, currentDosePage * DOSES_PER_PAGE), 
+    [scheduledDoses, currentDosePage]
+  );
+
+  const hasMoreSchedules = useMemo(() => 
+    schedules.length > currentSchedulePage * SCHEDULES_PER_PAGE,
+    [schedules.length, currentSchedulePage]
+  );
+
+  const hasMoreDoses = useMemo(() => 
+    scheduledDoses.length > currentDosePage * DOSES_PER_PAGE,
+    [scheduledDoses.length, currentDosePage]
+  );
+
+  const loadMoreSchedules = useCallback(() => {
+    if (!loadingMoreSchedules && hasMoreSchedules) {
+      setLoadingMoreSchedules(true);
+      setTimeout(() => {
+        setCurrentSchedulePage(prev => prev + 1);
+        setLoadingMoreSchedules(false);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }, 100);
+    }
+  }, [loadingMoreSchedules, hasMoreSchedules]);
+
+  const loadMoreDoses = useCallback(() => {
+    if (!loadingMoreDoses && hasMoreDoses) {
+      setLoadingMoreDoses(true);
+      setTimeout(() => {
+        setCurrentDosePage(prev => prev + 1);
+        setLoadingMoreDoses(false);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }, 100);
+    }
+  }, [loadingMoreDoses, hasMoreDoses]);
+
+  const markDoseAsTaken = useCallback(async (dose: ScheduledDose) => {
     try {
       await apiService.logMedicationTaken(dose.scheduleId, new Date());
       
@@ -257,114 +286,37 @@ const ScheduleScreen: React.FC = ({ navigation }: any) => {
         i18n.t('errors.unknown_error')
       );
     }
-  };
+  }, []);
 
-  const navigateToAddSchedule = () => {
+  const navigateToAddSchedule = useCallback(() => {
     navigation.navigate('AddSchedule');
-  };
+  }, [navigation]);
 
-  const navigateToEditSchedule = (scheduleId: number) => {
+  const navigateToEditSchedule = useCallback((scheduleId: number) => {
     navigation.navigate('EditSchedule', { scheduleId });
-  };
+  }, [navigation]);
 
-  const getDoseStatusColor = (status: ScheduledDose['status']): string => {
-    switch (status) {
-      case 'taken': return MedGuardColors.alerts.successGreen;
-      case 'upcoming': return MedGuardColors.alerts.infoBlue;
-      case 'overdue': return MedGuardColors.alerts.warningAmber;
-      case 'missed': return MedGuardColors.alerts.criticalRed;
-      default: return MedGuardColors.extended.mediumGray;
-    }
-  };
+  // Note: Status color and text logic moved to ScheduleCard and DoseCard components for better performance
 
-  const getDoseStatusText = (status: ScheduledDose['status']): string => {
-    switch (status) {
-      case 'taken': return i18n.t('schedule.taken_today');
-      case 'upcoming': return i18n.t('schedule.upcoming_doses');
-      case 'overdue': return i18n.t('reminders.overdue_medication');
-      case 'missed': return i18n.t('schedule.missed_doses');
-      default: return '';
-    }
-  };
+  // Optimized render function with useCallback for better FlatList performance
+  const renderScheduleItem = useCallback(({ item, index }: { item: MedicationSchedule; index: number }) => (
+    <ScheduleCard 
+      key={item.id}
+      item={item}
+      index={index}
+      onPress={navigateToEditSchedule}
+    />
+  ), [navigateToEditSchedule]);
 
-  const renderScheduleItem = ({ item }: { item: MedicationSchedule }) => {
-    const activeDays = [
-      item.monday && 'Mon',
-      item.tuesday && 'Tue', 
-      item.wednesday && 'Wed',
-      item.thursday && 'Thu',
-      item.friday && 'Fri',
-      item.saturday && 'Sat',
-      item.sunday && 'Sun',
-    ].filter(Boolean).join(', ');
-
-    return (
-      <ListItem
-        title={item.medication.name}
-        description={`${item.dosageAmount} - ${item.frequency}\n${activeDays}`}
-        accessoryLeft={() => (
-          <View style={[
-            styles.statusIndicator,
-            { backgroundColor: item.status === 'active' 
-              ? MedGuardColors.alerts.successGreen 
-              : MedGuardColors.extended.mediumGray 
-            }
-          ]} />
-        )}
-        accessoryRight={() => (
-          <Button
-            size="tiny"
-            appearance="ghost"
-            accessoryLeft={EditIcon}
-            onPress={() => navigateToEditSchedule(item.id)}
-          />
-        )}
-        onPress={() => navigateToEditSchedule(item.id)}
-        style={styles.scheduleItem}
-      />
-    );
-  };
-
-  const renderDoseItem = ({ item }: { item: ScheduledDose }) => {
-    const statusColor = getDoseStatusColor(item.status);
-    const timeText = format(item.scheduledTime, 'HH:mm', { locale });
-    
-    return (
-      <ListItem
-        title={item.medicationName}
-        description={`${item.dosageAmount} at ${timeText}${item.instructions ? `\n${item.instructions}` : ''}`}
-        accessoryLeft={() => (
-          <View style={[styles.doseStatusIndicator, { backgroundColor: statusColor }]}>
-            <Icon
-              name={item.status === 'taken' ? 'checkmark' : 'clock'}
-              style={styles.doseStatusIcon}
-              fill={MedGuardColors.primary.cleanWhite}
-            />
-          </View>
-        )}
-        accessoryRight={() => (
-          item.status === 'upcoming' || item.status === 'overdue' ? (
-            <Button
-              size="small"
-              status="success"
-              accessoryLeft={CheckIcon}
-              onPress={() => markDoseAsTaken(item)}
-            >
-              {i18n.t('reminders.take_now')}
-            </Button>
-          ) : (
-            <Text 
-              category="caption1" 
-              style={{ color: statusColor }}
-            >
-              {getDoseStatusText(item.status)}
-            </Text>
-          )
-        )}
-        style={styles.doseItem}
-      />
-    );
-  };
+  // Optimized render function with useCallback for better FlatList performance
+  const renderDoseItem = useCallback(({ item, index }: { item: ScheduledDose; index: number }) => (
+    <DoseCard 
+      key={item.id}
+      item={item}
+      index={index}
+      onMarkTaken={markDoseAsTaken}
+    />
+  ), [markDoseAsTaken]);
 
   const renderCalendarView = () => (
     <View style={styles.calendarContainer}>
@@ -391,11 +343,37 @@ const ScheduleScreen: React.FC = ({ navigation }: any) => {
         
         {scheduledDoses.length > 0 ? (
           <FlatList
-            data={scheduledDoses}
+            data={paginatedDoses}
             renderItem={renderDoseItem}
             keyExtractor={(item) => item.id}
             ItemSeparatorComponent={() => <Divider />}
+            onEndReached={loadMoreDoses}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={() => {
+              if (loadingMoreDoses) {
+                return (
+                  <View style={styles.loadingMoreContainer}>
+                    <Spinner size="small" />
+                    <Text category="caption1" appearance="hint" style={styles.loadingMoreText}>
+                      {i18n.t('common.loading_more')}
+                    </Text>
+                  </View>
+                );
+              }
+              return null;
+            }}
             style={styles.dosesList}
+            // Performance optimizations
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={8}
+            updateCellsBatchingPeriod={50}
+            initialNumToRender={10}
+            windowSize={8}
+            getItemLayout={(data, index) => ({
+              length: 80, // Approximate item height
+              offset: 80 * index,
+              index,
+            })}
           />
         ) : (
           <View style={styles.emptyDay}>
@@ -424,7 +402,7 @@ const ScheduleScreen: React.FC = ({ navigation }: any) => {
       
       {schedules.length > 0 ? (
         <FlatList
-          data={schedules.filter(s => showActiveOnly ? s.status === 'active' : true)}
+          data={paginatedSchedules.filter(s => showActiveOnly ? s.status === 'active' : true)}
           renderItem={renderScheduleItem}
           keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={() => <Divider />}
@@ -436,7 +414,33 @@ const ScheduleScreen: React.FC = ({ navigation }: any) => {
               tintColor={MedGuardColors.primary.trustBlue}
             />
           }
+          onEndReached={loadMoreSchedules}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={() => {
+            if (loadingMoreSchedules) {
+              return (
+                <View style={styles.loadingMoreContainer}>
+                  <Spinner size="small" />
+                  <Text category="caption1" appearance="hint" style={styles.loadingMoreText}>
+                    {i18n.t('common.loading_more')}
+                  </Text>
+                </View>
+              );
+            }
+            return null;
+          }}
           contentContainerStyle={styles.schedulesList}
+          // Performance optimizations
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          updateCellsBatchingPeriod={50}
+          initialNumToRender={12}
+          windowSize={10}
+          getItemLayout={(data, index) => ({
+            length: 75, // Approximate item height
+            offset: 75 * index,
+            index,
+          })}
         />
       ) : (
         <View style={styles.emptyState}>
@@ -554,30 +558,17 @@ const styles = StyleSheet.create({
   schedulesList: {
     paddingBottom: Spacing.xl,
   },
-  scheduleItem: {
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-  },
-  statusIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: Spacing.sm,
-  },
-  doseItem: {
-    paddingVertical: Spacing.sm,
-  },
-  doseStatusIndicator: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
+  loadingMoreContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    gap: 8,
   },
-  doseStatusIcon: {
-    width: 16,
-    height: 16,
+  loadingMoreText: {
+    marginLeft: 8,
   },
+  // Note: Schedule and dose item styles moved to ScheduleCard and DoseCard components
   emptyState: {
     flex: 1,
     justifyContent: 'center',

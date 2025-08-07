@@ -62,6 +62,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -136,8 +138,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         title: notification.request.content.title || '',
         body: notification.request.content.body || '',
         data: notification.request.content.data,
-        type: notification.request.content.data?.type || 'general',
-        priority: notification.request.content.data?.priority || 'default',
+        type: (notification.request.content.data?.type as any) || 'general',
+        priority: (notification.request.content.data?.priority as any) || 'default',
         read: false,
         createdAt: new Date(),
       };
@@ -165,8 +167,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     });
 
     return () => {
-      Notifications.removeNotificationSubscription(notificationListener);
-      Notifications.removeNotificationSubscription(responseListener);
+      notificationListener?.remove();
+      responseListener?.remove();
     };
   };
 
@@ -221,7 +223,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
           type: notification.type,
           priority: notification.priority,
         },
-        sound: state.settings.soundEnabled ? 'default' : undefined,
+        ...(state.settings.soundEnabled && { sound: 'default' }),
       };
 
       let trigger: Notifications.NotificationTriggerInput | null = null;
@@ -229,7 +231,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       if (notification.scheduledDate) {
         trigger = {
           date: notification.scheduledDate,
-        };
+        } as Notifications.NotificationTriggerInput;
       }
 
       await Notifications.scheduleNotificationAsync({
@@ -368,8 +370,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         content: {
           title,
           body,
-          data,
-          sound: state.settings.soundEnabled ? 'default' : undefined,
+          ...(data && { data }),
+          ...(state.settings.soundEnabled && { sound: 'default' }),
         },
         trigger: null, // Send immediately
       });

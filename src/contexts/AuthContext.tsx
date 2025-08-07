@@ -1,19 +1,21 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import * as LocalAuthentication from 'expo-local-authentication';
+import * as Haptics from 'expo-haptics';
+import authService from '../services/authService';
 
 export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  phoneNumber?: string;
-  dateOfBirth?: string;
+  phoneNumber?: string | undefined;
+  dateOfBirth?: string | undefined;
   emergencyContact?: {
     name: string;
     phone: string;
     relationship: string;
-  };
+  } | undefined;
   preferences: {
     notifications: boolean;
     biometricAuth: boolean;
@@ -64,19 +66,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkStoredAuth = async () => {
     try {
-      const storedToken = await SecureStore.getItemAsync('auth_token');
-      const storedUser = await SecureStore.getItemAsync('user_data');
-      const biometricEnabled = await SecureStore.getItemAsync('biometric_enabled');
+      const isAuthenticated = await authService.isAuthenticated();
+      
+      if (isAuthenticated) {
+        const user = await authService.getCurrentUser();
+        const tokens = await authService.getCurrentTokens();
+        const biometricEnabled = await SecureStore.getItemAsync('biometric_enabled');
 
-      if (storedToken && storedUser) {
-        const user = JSON.parse(storedUser);
-        setAuthState({
-          user,
-          token: storedToken,
-          isAuthenticated: true,
-          isLoading: false,
-          biometricEnabled: biometricEnabled === 'true',
-        });
+        if (user && tokens) {
+          // Transform API user to local User interface
+          const localUser: User = {
+            id: user.id.toString(),
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phoneNumber: undefined, // Will be populated from profile
+            dateOfBirth: undefined, // Will be populated from profile
+            emergencyContact: undefined, // Will be populated from profile
+            preferences: {
+              notifications: true,
+              biometricAuth: false,
+              language: user.preferredLanguage === 'af' ? 'af-ZA' : 'en-ZA',
+              theme: 'auto',
+            },
+          };
+
+          setAuthState({
+            user: localUser,
+            token: tokens.accessToken,
+            isAuthenticated: true,
+            isLoading: false,
+            biometricEnabled: biometricEnabled === 'true',
+          });
+        } else {
+          setAuthState(prev => ({ ...prev, isLoading: false }));
+        }
       } else {
         setAuthState(prev => ({ ...prev, isLoading: false }));
       }
@@ -90,46 +114,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }));
 
-      // TODO: Implement actual API call to backend
-      // For now, simulate a successful login
-      const mockUser: User = {
-        id: '1',
-        email,
-        firstName: 'John',
-        lastName: 'Doe',
-        phoneNumber: '+27123456789',
-        dateOfBirth: '1990-01-01',
-        emergencyContact: {
-          name: 'Jane Doe',
-          phone: '+27123456788',
-          relationship: 'Spouse',
-        },
+      // Call the actual authentication service
+      const { user: apiUser, tokens } = await authService.login(email, password);
+
+      // Transform API user to local User interface
+      const user: User = {
+        id: apiUser.id.toString(),
+        email: apiUser.email,
+        firstName: apiUser.firstName,
+        lastName: apiUser.lastName,
+        phoneNumber: undefined, // Will be populated from profile
+        dateOfBirth: undefined, // Will be populated from profile
+        emergencyContact: undefined, // Will be populated from profile
         preferences: {
           notifications: true,
           biometricAuth: false,
-          language: 'en-ZA',
+          language: apiUser.preferredLanguage === 'af' ? 'af-ZA' : 'en-ZA',
           theme: 'auto',
         },
       };
 
-      const mockToken = 'mock_jwt_token_' + Date.now();
-
       // Store in secure storage
-      await SecureStore.setItemAsync('auth_token', mockToken);
-      await SecureStore.setItemAsync('user_data', JSON.stringify(mockUser));
+      await SecureStore.setItemAsync('auth_token', tokens.accessToken);
+      await SecureStore.setItemAsync('user_data', JSON.stringify(user));
 
       setAuthState({
-        user: mockUser,
-        token: mockToken,
+        user,
+        token: tokens.accessToken,
         isAuthenticated: true,
         isLoading: false,
         biometricEnabled: authState.biometricEnabled,
       });
 
+      // Trigger haptic feedback for successful login
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
       return true;
     } catch (error) {
       console.error('Login error:', error);
       setAuthState(prev => ({ ...prev, isLoading: false }));
+      
+      // Trigger haptic feedback for failed login
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      
       return false;
     }
   };
@@ -138,53 +165,65 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }));
 
-      // TODO: Implement actual API call to backend
-      // For now, simulate a successful registration
+      // Call the actual registration service
       const { password, ...userInfo } = userData;
-      const mockUser: User = {
-        id: '1',
+      const { user: apiUser, tokens } = await authService.register({
         email: userInfo.email || '',
+        password,
         firstName: userInfo.firstName || '',
         lastName: userInfo.lastName || '',
-        phoneNumber: userInfo.phoneNumber,
-        dateOfBirth: userInfo.dateOfBirth,
-        emergencyContact: userInfo.emergencyContact,
+        userType: 'PATIENT', // Default to patient, can be updated later
+        preferredLanguage: userInfo.preferences?.language === 'af-ZA' ? 'af' : 'en',
+      });
+
+      // Transform API user to local User interface
+      const user: User = {
+        id: apiUser.id.toString(),
+        email: apiUser.email,
+        firstName: apiUser.firstName,
+        lastName: apiUser.lastName,
+        phoneNumber: undefined, // Will be populated from profile
+        dateOfBirth: undefined, // Will be populated from profile
+        emergencyContact: undefined, // Will be populated from profile
         preferences: {
           notifications: true,
           biometricAuth: false,
-          language: 'en-ZA',
+          language: apiUser.preferredLanguage === 'af' ? 'af-ZA' : 'en-ZA',
           theme: 'auto',
-          ...userInfo.preferences,
         },
       };
 
-      const mockToken = 'mock_jwt_token_' + Date.now();
-
       // Store in secure storage
-      await SecureStore.setItemAsync('auth_token', mockToken);
-      await SecureStore.setItemAsync('user_data', JSON.stringify(mockUser));
+      await SecureStore.setItemAsync('auth_token', tokens.accessToken);
+      await SecureStore.setItemAsync('user_data', JSON.stringify(user));
 
       setAuthState({
-        user: mockUser,
-        token: mockToken,
+        user,
+        token: tokens.accessToken,
         isAuthenticated: true,
         isLoading: false,
         biometricEnabled: false,
       });
 
+      // Trigger haptic feedback for successful registration
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
       return true;
     } catch (error) {
       console.error('Registration error:', error);
       setAuthState(prev => ({ ...prev, isLoading: false }));
+      
+      // Trigger haptic feedback for failed registration
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      
       return false;
     }
   };
 
   const logout = async (): Promise<void> => {
     try {
-      // Clear secure storage
-      await SecureStore.deleteItemAsync('auth_token');
-      await SecureStore.deleteItemAsync('user_data');
+      // Call the auth service logout method
+      await authService.logout();
 
       setAuthState({
         user: null,
@@ -193,8 +232,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isLoading: false,
         biometricEnabled: false,
       });
+
+      // Trigger haptic feedback for logout
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
       console.error('Logout error:', error);
+      
+      // Clear local state even if API call fails
+      setAuthState({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+        biometricEnabled: false,
+      });
     }
   };
 
@@ -202,15 +253,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       if (!authState.user) return;
 
-      const updatedUser = { ...authState.user, ...userData };
+      // Transform local User interface to API format
+      const apiProfileData: any = {};
+      
+      if (userData.firstName) apiProfileData.firstName = userData.firstName;
+      if (userData.lastName) apiProfileData.lastName = userData.lastName;
+      if (userData.preferences?.language) {
+        apiProfileData.preferredLanguage = userData.preferences.language === 'af-ZA' ? 'af' : 'en';
+      }
+
+      // Call the API to update profile
+      const updatedApiUser = await authService.updateProfile(apiProfileData);
+
+      // Transform API user back to local User interface
+      const updatedUser: User = {
+        id: updatedApiUser.id.toString(),
+        email: updatedApiUser.email,
+        firstName: updatedApiUser.firstName,
+        lastName: updatedApiUser.lastName,
+        phoneNumber: authState.user.phoneNumber, // Keep existing local data
+        dateOfBirth: authState.user.dateOfBirth, // Keep existing local data
+        emergencyContact: authState.user.emergencyContact, // Keep existing local data
+        preferences: {
+          ...authState.user.preferences,
+          language: updatedApiUser.preferredLanguage === 'af' ? 'af-ZA' : 'en-ZA',
+          ...userData.preferences,
+        },
+      };
+
+      // Update local storage
       await SecureStore.setItemAsync('user_data', JSON.stringify(updatedUser));
 
       setAuthState(prev => ({
         ...prev,
         user: updatedUser,
       }));
+
+      // Trigger haptic feedback for successful update
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
       console.error('Update user error:', error);
+      
+      // Trigger haptic feedback for failed update
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   };
 
@@ -257,22 +342,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const forgotPassword = async (email: string): Promise<boolean> => {
     try {
-      // TODO: Implement actual API call to backend
-      console.log('Password reset requested for:', email);
-      return true;
+      const success = await authService.forgotPassword(email);
+      
+      if (success) {
+        // Trigger haptic feedback for successful request
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      
+      return success;
     } catch (error) {
       console.error('Forgot password error:', error);
+      
+      // Trigger haptic feedback for failed request
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      
       return false;
     }
   };
 
   const resetPassword = async (token: string, newPassword: string): Promise<boolean> => {
     try {
-      // TODO: Implement actual API call to backend
-      console.log('Password reset with token:', token);
-      return true;
+      const success = await authService.resetPassword(token, newPassword);
+      
+      if (success) {
+        // Trigger haptic feedback for successful reset
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      
+      return success;
     } catch (error) {
       console.error('Reset password error:', error);
+      
+      // Trigger haptic feedback for failed reset
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      
       return false;
     }
   };

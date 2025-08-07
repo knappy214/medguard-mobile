@@ -3,7 +3,27 @@ import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import authService from './authService';
-import { MedicationSchedule } from './apiService';
+// Define the interface locally since it's not exported from apiService
+interface MedicationSchedule {
+  id: number;
+  medication: any;
+  patient: number;
+  timing: 'morning' | 'noon' | 'night' | 'custom';
+  customTime?: string;
+  dosageAmount: string;
+  frequency: string;
+  monday: boolean;
+  tuesday: boolean;
+  wednesday: boolean;
+  thursday: boolean;
+  friday: boolean;
+  saturday: boolean;
+  sunday: boolean;
+  startDate: string;
+  endDate?: string;
+  status: 'active' | 'inactive' | 'paused' | 'completed';
+  instructions?: string;
+}
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -14,6 +34,8 @@ Notifications.setNotificationHandler({
       shouldShowAlert: true,
       shouldPlaySound: true,
       shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
       priority: data.priority === 'critical' 
         ? Notifications.AndroidNotificationPriority.HIGH
         : Notifications.AndroidNotificationPriority.DEFAULT,
@@ -81,7 +103,6 @@ class NotificationService {
             allowDisplayInCarPlay: true,
             allowCriticalAlerts: true,
             allowProvisional: false,
-            allowAnnouncements: true,
           },
           android: {
             allowAlert: true,
@@ -278,8 +299,8 @@ class NotificationService {
     
     if (schedule.timing === 'custom' && schedule.customTime) {
       const [timeHours, timeMinutes] = schedule.customTime.split(':').map(Number);
-      hours = timeHours;
-      minutes = timeMinutes;
+      hours = timeHours || 0;
+      minutes = timeMinutes || 0;
     } else {
       // Default times
       switch (schedule.timing) {

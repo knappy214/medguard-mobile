@@ -1,4 +1,4 @@
-import { SecureStore } from 'expo-secure-store';
+import * as SecureStore from 'expo-secure-store';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { Platform } from 'react-native';
 
@@ -30,7 +30,7 @@ class AuthService {
   
   async login(email: string, password: string): Promise<{ user: User; tokens: AuthTokens }> {
     try {
-      const response = await fetch(`${this.baseUrl}/auth/login/`, {
+      const response = await fetch(`${this.baseUrl}/api/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ class AuthService {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Login failed');
+        throw new Error(errorData.detail || errorData.message || 'Login failed');
       }
       
       const data = await response.json();
@@ -53,6 +53,138 @@ class AuthService {
       return data;
     } catch (error) {
       console.error('Login error:', error);
+      throw error;
+    }
+  }
+
+  async register(userData: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    userType: 'PATIENT' | 'CAREGIVER' | 'HEALTHCARE_PROVIDER';
+    preferredLanguage?: 'en' | 'af';
+  }): Promise<{ user: User; tokens: AuthTokens }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/auth/register/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          ...userData,
+          preferredLanguage: userData.preferredLanguage || 'en',
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || errorData.message || 'Registration failed');
+      }
+      
+      const data = await response.json();
+      
+      // Securely store tokens
+      await this.storeTokens(data.tokens);
+      await this.storeUser(data.user);
+      
+      return data;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
+  }
+
+  async forgotPassword(email: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/auth/forgot-password/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || errorData.message || 'Password reset request failed');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      throw error;
+    }
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/auth/reset-password/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ token, newPassword }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || errorData.message || 'Password reset failed');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Reset password error:', error);
+      throw error;
+    }
+  }
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<boolean> {
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await fetch(`${this.baseUrl}/api/auth/change-password/`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || errorData.message || 'Password change failed');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Change password error:', error);
+      throw error;
+    }
+  }
+
+  async updateProfile(profileData: Partial<User>): Promise<User> {
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await fetch(`${this.baseUrl}/api/auth/profile/`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify(profileData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || errorData.message || 'Profile update failed');
+      }
+      
+      const updatedUser = await response.json();
+      
+      // Update stored user data
+      await this.storeUser(updatedUser);
+      
+      return updatedUser;
+    } catch (error) {
+      console.error('Update profile error:', error);
       throw error;
     }
   }
@@ -74,7 +206,6 @@ class AuthService {
       // Perform biometric authentication
       const biometricResult = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Access MedGuard SA',
-        subPrompt: 'Use your biometric to access your medication information',
         fallbackLabel: 'Use Passcode',
         disableDeviceFallback: false,
       });
@@ -117,7 +248,6 @@ class AuthService {
       // Authenticate to enable biometrics
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Enable Biometric Login',
-        subPrompt: 'Use your biometric to enable quick access to MedGuard SA',
       });
       
       if (result.success) {
@@ -136,7 +266,7 @@ class AuthService {
       // Call backend logout endpoint
       const tokens = await this.getStoredTokens();
       if (tokens) {
-        await fetch(`${this.baseUrl}/auth/logout/`, {
+        await fetch(`${this.baseUrl}/api/auth/logout/`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${tokens.accessToken}`,
@@ -180,7 +310,7 @@ class AuthService {
     }
     
     // Refresh token
-    const response = await fetch(`${this.baseUrl}/auth/refresh/`, {
+    const response = await fetch(`${this.baseUrl}/api/auth/refresh/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -205,10 +335,14 @@ class AuthService {
     ]);
   }
   
-  async getCurrentUser(): Promise<User | null> {
+    async getCurrentUser(): Promise<User | null> {
     return await this.getStoredUser();
   }
-  
+
+  async getCurrentTokens(): Promise<AuthTokens | null> {
+    return await this.getStoredTokens();
+  }
+
   async isAuthenticated(): Promise<boolean> {
     const tokens = await this.getStoredTokens();
     const user = await this.getStoredUser();

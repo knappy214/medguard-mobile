@@ -305,7 +305,7 @@ export const MedicationProvider: React.FC<MedicationProviderProps> = ({ children
         medicationId,
         takenAt: now,
         dosage,
-        notes,
+        ...(notes && { notes }),
         createdAt: now,
       };
 

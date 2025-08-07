@@ -31,7 +31,7 @@ import notificationService from '../../services/notificationService';
 import authService from '../../services/authService';
 import i18n from '../../i18n';
 import { MedGuardColors } from '../../theme/colors';
-import { spacing as Spacing } from '../../theme';
+import { Spacing } from '../../theme/typography';
 
 // Types
 interface DashboardData {
@@ -131,7 +131,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
           if (schedule.timing === 'custom' && schedule.customTime) {
             const [hours, minutes] = schedule.customTime.split(':').map(Number);
             scheduledTime = new Date(now);
-            scheduledTime.setHours(hours, minutes, 0, 0);
+            scheduledTime.setHours(hours || 0, minutes || 0, 0, 0);
           } else {
             const timeMap = {
               morning: { hours: 8, minutes: 0 },

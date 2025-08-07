@@ -1,4 +1,4 @@
-@cursor Create medguard-mobile/src/navigation/AppNavigator.tsx with comprehensive navigation:
+
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -37,7 +37,7 @@ import MedicationDetailScreen from '../screens/medications/MedicationDetailScree
 import AddMedicationScreen from '../screens/medications/AddMedicationScreen';
 import EditMedicationScreen from '../screens/medications/EditMedicationScreen';
 import AddScheduleScreen from '../screens/schedule/AddScheduleScreen';
-import EditScheduleScreen from '../screens/schedule/EditScheduleScreen';
+import EditScheduleScreen from '../screens/schedule/EditScheduleScreen'; 
 import OnboardingScreen from '../screens/onboarding/OnboardingScreen';
 
 // Navigation types

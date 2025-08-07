@@ -1,128 +1,236 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from 'react-native';
 import {
   Layout,
   Text,
-  Input,
-  Button,
   Card,
-  useTheme,
+  Button,
+  Input,
+  Icon,
+  IconProps,
+  Toggle,
 } from '@ui-kitten/components';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '@/contexts/AuthContext';
-import { useLocalization } from '@/contexts/LocalizationContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
+import authService from '../../services/authService';
+import i18n from '../../i18n';
+import { MedGuardColors } from '../../theme/colors';
+import { Spacing } from '../../theme/typography';
 
-const LoginScreen: React.FC = () => {
+const EmailIcon = (props: IconProps) => <Icon {...props} name='email-outline' />;
+const PasswordIcon = (props: IconProps) => <Icon {...props} name='lock-outline' />;
+const EyeIcon = (props: IconProps) => <Icon {...props} name='eye-outline' />;
+const EyeOffIcon = (props: IconProps) => <Icon {...props} name='eye-off-outline' />;
+const FingerprintIcon = (props: IconProps) => <Icon {...props} name='finger-print-outline' />;
+
+const LoginScreen: React.FC = ({ navigation }: any) => {
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const theme = useTheme();
-  const { login } = useAuth();
-  const { t } = useLocalization();
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) return;
-    
-    setIsLoading(true);
+    if (!email || !password) {
+      Alert.alert(i18n.t('common.error'), i18n.t('errors.validation_error'));
+      return;
+    }
+
     try {
-      const success = await login(email, password);
-      if (success) {
-        console.log('Login successful');
-      } else {
-        console.log('Login failed');
-      }
+      setLoading(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      
+      await authService.login(email, password);
+      
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Main' }],
+      });
     } catch (error) {
       console.error('Login error:', error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert(
+        i18n.t('common.error'),
+        (error as Error)?.message || i18n.t('auth.login_error')
+      );
     } finally {
-      setIsLoading(false);
+      setLoading(false);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    try {
+      const result = await authService.loginWithBiometrics();
+      if (result) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        });
+      }
+    } catch (error) {
+      console.error('Biometric login error:', error);
+      Alert.alert(
+        i18n.t('common.error'),
+        (error as Error)?.message || i18n.t('auth.biometric_not_available')
+      );
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Layout style={styles.layout}>
+    <Layout style={[styles.container, { paddingTop: insets.top }]} level="1">
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
         <View style={styles.content}>
-          <Card style={styles.card}>
+          <View style={styles.logoContainer}>
             <Text category="h1" style={styles.title}>
-              {t('auth.welcome')}
+              MedGuard SA
             </Text>
-            <Text category="s1" style={styles.subtitle}>
-              {t('auth.loginSubtitle')}
+            <Text category="s1" appearance="hint" style={styles.subtitle}>
+              {i18n.t('auth.login_subtitle')}
             </Text>
-            
+          </View>
+
+          <Card style={styles.loginCard}>
             <Input
-              label={t('common.email')}
-              placeholder={t('auth.emailPlaceholder')}
+              placeholder={i18n.t('auth.email')}
               value={email}
               onChangeText={setEmail}
-              style={styles.input}
+              accessoryLeft={EmailIcon}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoComplete="email"
+              style={styles.input}
             />
-            
+
             <Input
-              label={t('common.password')}
-              placeholder={t('auth.passwordPlaceholder')}
+              placeholder={i18n.t('auth.password')}
               value={password}
               onChangeText={setPassword}
+              accessoryLeft={PasswordIcon}
+              accessoryRight={() => (
+                <Icon
+                  name={passwordVisible ? 'eye-off-outline' : 'eye-outline'}
+                  onPress={() => setPasswordVisible(!passwordVisible)}
+                />
+              )}
+              secureTextEntry={!passwordVisible}
+              autoComplete="password"
               style={styles.input}
-              secureTextEntry
-              autoCapitalize="none"
             />
-            
+
+            <View style={styles.optionsRow}>
+              <View style={styles.toggleContainer}>
+                <Toggle
+                  checked={rememberMe}
+                  onChange={setRememberMe}
+                />
+                <Text category="s1" style={styles.toggleText}>
+                  {i18n.t('auth.remember_me')}
+                </Text>
+              </View>
+              <Button
+                appearance="ghost"
+                size="tiny"
+                onPress={() => navigation.navigate('ForgotPassword')}
+              >
+                {i18n.t('auth.forgot_password')}
+              </Button>
+            </View>
+
             <Button
+              style={styles.loginButton}
+              size="large"
               onPress={handleLogin}
-              disabled={isLoading || !email || !password}
-              style={styles.button}
+              disabled={loading}
             >
-              {isLoading ? t('common.loading') : t('auth.loginButton')}
+              {loading ? i18n.t('common.loading') : i18n.t('auth.login')}
             </Button>
-            
-            <Text category="c1" style={styles.helpText}>
-              {t('auth.alreadyHaveAccount')}
-            </Text>
+
+            <Button
+              style={styles.biometricButton}
+              appearance="outline"
+              accessoryLeft={FingerprintIcon}
+              onPress={handleBiometricLogin}
+            >
+              {i18n.t('auth.biometric_login')}
+            </Button>
           </Card>
+
+          <View style={styles.registerContainer}>
+            <Text category="s1" appearance="hint">
+              {i18n.t('auth.no_account')}
+            </Text>
+            <Button
+              appearance="ghost"
+              onPress={() => navigation.navigate('Register')}
+            >
+              {i18n.t('auth.register')}
+            </Button>
+          </View>
         </View>
-      </Layout>
-    </SafeAreaView>
+      </KeyboardAvoidingView>
+    </Layout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  layout: {
-    flex: 1,
-  },
+  container: { flex: 1 },
+  keyboardView: { flex: 1 },
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: Spacing.xl,
   },
-  card: {
-    padding: 24,
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: Spacing.xl * 2,
   },
   title: {
-    textAlign: 'center',
-    marginBottom: 8,
+    color: MedGuardColors.primary.trustBlue,
+    marginBottom: Spacing.sm,
   },
   subtitle: {
     textAlign: 'center',
-    marginBottom: 32,
-    opacity: 0.7,
+  },
+  loginCard: {
+    marginBottom: Spacing.xl,
   },
   input: {
-    marginBottom: 16,
+    marginBottom: Spacing.md,
   },
-  button: {
-    marginTop: 8,
-    marginBottom: 16,
+  optionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
   },
-  helpText: {
-    textAlign: 'center',
-    opacity: 0.6,
+  toggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  toggleText: {
+    marginLeft: Spacing.sm,
+  },
+  loginButton: {
+    marginBottom: Spacing.md,
+  },
+  biometricButton: {
+    marginBottom: Spacing.md,
+  },
+  registerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

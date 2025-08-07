@@ -358,7 +358,7 @@ class ApiService {
       // Test connection with a lightweight request
       const response = await fetch(`${this.baseUrl}/api/health/`, {
         method: 'HEAD',
-        timeout: 5000,
+        signal: AbortSignal.timeout(5000),
       });
       
       if (response.ok) {
@@ -368,7 +368,7 @@ class ApiService {
         await this.getMedicationSchedules(true);
       }
     } catch (error) {
-      console.log('Sync check failed - continuing offline:', error.message);
+      console.log('Sync check failed - continuing offline:', (error as Error).message);
     }
   }
 }

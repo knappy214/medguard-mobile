@@ -350,5 +350,169 @@
     "back_button": "Back button",
     "menu_button": "Menu button",
     "settings_button": "Settings button"
+  },
+
+  "onboarding": {
+    "welcome_title": "Welcome to MedGuard SA",
+    "welcome_subtitle": "Your trusted medication companion",
+    "feature_reminders_title": "Smart Reminders",
+    "feature_reminders_desc": "Never miss a dose with intelligent scheduling",
+    "feature_tracking_title": "Adherence Tracking",
+    "feature_tracking_desc": "Monitor your medication compliance",
+    "feature_scanning_title": "Prescription Scanning",
+    "feature_scanning_desc": "Easily add medications by scanning prescriptions",
+    "feature_emergency_title": "Emergency Access",
+    "feature_emergency_desc": "Quick access to critical medical information",
+    "get_started": "Get Started",
+    "skip_intro": "Skip Introduction",
+    "permissions_title": "Permissions Required",
+    "permissions_subtitle": "MedGuard SA needs these permissions to function properly",
+    "permission_notifications": "Notifications - For medication reminders",
+    "permission_camera": "Camera - To scan prescriptions",
+    "permission_storage": "Storage - To save your medication data",
+    "grant_permissions": "Grant Permissions",
+    "setup_complete": "Setup Complete!",
+    "setup_complete_desc": "You're ready to start managing your medications safely"
+  },
+
+  "biometric": {
+    "setup_title": "Biometric Authentication",
+    "setup_subtitle": "Secure your medical data with biometric login",
+    "enable_biometric": "Enable Biometric Login",
+    "disable_biometric": "Disable Biometric Login",
+    "biometric_prompt_title": "Authenticate",
+    "biometric_prompt_subtitle": "Use your fingerprint or face to access MedGuard SA",
+    "biometric_success": "Biometric authentication enabled",
+    "biometric_error": "Biometric authentication failed",
+    "biometric_not_supported": "Biometric authentication not supported on this device",
+    "biometric_not_enrolled": "No biometric credentials enrolled. Please set up in device settings"
+  },
+
+  "theme": {
+    "appearance": "Appearance",
+    "light_mode": "Light Mode",
+    "dark_mode": "Dark Mode",
+    "auto_mode": "Auto (System)",
+    "high_contrast": "High Contrast",
+    "font_size": "Font Size",
+    "font_size_small": "Small",
+    "font_size_normal": "Normal",
+    "font_size_large": "Large",
+    "font_size_extra_large": "Extra Large",
+    "reduce_motion": "Reduce Motion",
+    "increase_touch_targets": "Larger Touch Targets",
+    "reset_to_defaults": "Reset to Defaults"
+  },
+
+  "validation": {
+    "required_field": "This field is required",
+    "invalid_email": "Please enter a valid email address",
+    "invalid_phone": "Please enter a valid South African phone number",
+    "invalid_id_number": "Please enter a valid South African ID number",
+    "password_too_short": "Password must be at least 8 characters",
+    "passwords_dont_match": "Passwords do not match",
+    "invalid_date": "Please enter a valid date",
+    "invalid_time": "Please enter a valid time (HH:mm format)",
+    "invalid_dosage": "Please enter a valid dosage with amount and unit",
+    "name_too_short": "Name must be at least 2 characters",
+    "file_too_large": "File size must be less than 10MB",
+    "invalid_file_type": "File must be a JPEG, PNG, or WebP image"
+  },
+
+  "connectivity": {
+    "offline": "You're offline",
+    "online": "Connected",
+    "sync_pending": "Sync pending",
+    "sync_in_progress": "Syncing...",
+    "sync_complete": "Sync complete",
+    "sync_failed": "Sync failed",
+    "retry_sync": "Retry Sync",
+    "offline_mode": "Offline Mode",
+    "data_will_sync": "Your data will sync when connection is restored"
+  },
+
+  "performance": {
+    "loading": "Loading...",
+    "refreshing": "Refreshing...",
+    "load_more": "Load More",
+    "no_more_items": "No more items to load",
+    "pull_to_refresh": "Pull to refresh",
+    "optimizing": "Optimizing performance...",
+    "cache_cleared": "Cache cleared successfully"
+  },
+
+  "backup": {
+    "backup_data": "Backup Data",
+    "restore_data": "Restore Data",
+    "export_data": "Export Data",
+    "import_data": "Import Data",
+    "backup_successful": "Backup created successfully",
+    "restore_successful": "Data restored successfully",
+    "backup_failed": "Backup failed",
+    "restore_failed": "Restore failed",
+    "select_backup_file": "Select backup file",
+    "backup_location": "Backup Location",
+    "auto_backup": "Auto Backup",
+    "backup_frequency": "Backup Frequency",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly"
+  },
+
+  "medical_id": {
+    "medical_id": "Medical ID",
+    "emergency_info": "Emergency Information",
+    "show_when_locked": "Show When Locked",
+    "medical_conditions": "Medical Conditions",
+    "allergies_reactions": "Allergies & Reactions",
+    "medications": "Medications",
+    "blood_type": "Blood Type",
+    "organ_donor": "Organ Donor",
+    "weight": "Weight",
+    "height": "Height",
+    "emergency_contacts": "Emergency Contacts",
+    "medical_notes": "Medical Notes",
+    "add_medical_condition": "Add Medical Condition",
+    "add_allergy": "Add Allergy",
+    "add_emergency_contact": "Add Emergency Contact"
+  },
+
+  "drug_interactions": {
+    "interactions": "Drug Interactions",
+    "no_interactions": "No known interactions",
+    "check_interactions": "Check Interactions",
+    "interaction_warning": "Interaction Warning",
+    "mild_interaction": "Mild Interaction",
+    "moderate_interaction": "Moderate Interaction",
+    "severe_interaction": "Severe Interaction",
+    "consult_doctor": "Consult your doctor before taking these medications together",
+    "interaction_details": "Interaction Details",
+    "affected_medications": "Affected Medications"
+  },
+
+  "scheduling": {
+    "smart_scheduling": "Smart Scheduling",
+    "schedule_conflict": "Schedule Conflict",
+    "resolve_conflict": "Resolve Conflict",
+    "optimal_times": "Optimal Times",
+    "food_interactions": "Food Interactions",
+    "take_with_food": "Take with food",
+    "take_without_food": "Take without food",
+    "take_on_empty_stomach": "Take on empty stomach",
+    "spacing_recommendation": "Spacing Recommendation",
+    "minimum_gap": "Minimum gap between doses: {{hours}} hours"
+  },
+
+  "progress": {
+    "adherence_progress": "Adherence Progress",
+    "weekly_progress": "Weekly Progress",
+    "monthly_progress": "Monthly Progress",
+    "streak": "Current Streak",
+    "best_streak": "Best Streak",
+    "days": "days",
+    "improvement_tips": "Improvement Tips",
+    "set_more_reminders": "Set more frequent reminders",
+    "use_pill_organizer": "Consider using a pill organizer",
+    "talk_to_doctor": "Discuss adherence challenges with your doctor"
   }
 }

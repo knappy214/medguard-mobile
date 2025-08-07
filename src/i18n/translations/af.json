@@ -350,5 +350,169 @@
     "back_button": "Terug knoppie",
     "menu_button": "Kieslys knoppie",
     "settings_button": "Instellings knoppie"
+  },
+
+  "onboarding": {
+    "welcome_title": "Welkom by MedGuard SA",
+    "welcome_subtitle": "Jou vertroude medisyne metgesel",
+    "feature_reminders_title": "Slim Herinneringe",
+    "feature_reminders_desc": "Mis nooit 'n dosis met intelligente skedulering nie",
+    "feature_tracking_title": "Naleef Volging",
+    "feature_tracking_desc": "Monitor jou medisyne nakoming",
+    "feature_scanning_title": "Voorskrif Skandering",
+    "feature_scanning_desc": "Voeg medisyne maklik by deur voorskrifte te skandeer",
+    "feature_emergency_title": "Noodgeval Toegang",
+    "feature_emergency_desc": "Vinnige toegang tot kritieke mediese inligting",
+    "get_started": "Begin",
+    "skip_intro": "Slaan inleiding oor",
+    "permissions_title": "Toestemmings Vereis",
+    "permissions_subtitle": "MedGuard SA benodig hierdie toestemmings om behoorlik te funksioneer",
+    "permission_notifications": "Kennisgewings - Vir medisyne herinneringe",
+    "permission_camera": "Kamera - Om voorskrifte te skandeer",
+    "permission_storage": "Berging - Om jou medisyne data te stoor",
+    "grant_permissions": "Gee Toestemmings",
+    "setup_complete": "Opstelling Voltooi!",
+    "setup_complete_desc": "Jy is gereed om jou medisyne veilig te bestuur"
+  },
+
+  "biometric": {
+    "setup_title": "Biometriese Verifikasie",
+    "setup_subtitle": "Beveilig jou mediese data met biometriese aanmelding",
+    "enable_biometric": "Aktiveer Biometriese Aanmelding",
+    "disable_biometric": "Deaktiveer Biometriese Aanmelding",
+    "biometric_prompt_title": "Verifieer",
+    "biometric_prompt_subtitle": "Gebruik jou vingerafdruk of gesig om MedGuard SA te gebruik",
+    "biometric_success": "Biometriese verifikasie geaktiveer",
+    "biometric_error": "Biometriese verifikasie het misluk",
+    "biometric_not_supported": "Biometriese verifikasie word nie op hierdie toestel ondersteun nie",
+    "biometric_not_enrolled": "Geen biometriese geloofsbriewe geregistreer nie. Stel asseblief op in toestel instellings"
+  },
+
+  "theme": {
+    "appearance": "Voorkoms",
+    "light_mode": "Lig Modus",
+    "dark_mode": "Donker Modus",
+    "auto_mode": "Outomaties (Stelsel)",
+    "high_contrast": "Hoë Kontras",
+    "font_size": "Skrif Grootte",
+    "font_size_small": "Klein",
+    "font_size_normal": "Normaal",
+    "font_size_large": "Groot",
+    "font_size_extra_large": "Ekstra Groot",
+    "reduce_motion": "Verminder Beweging",
+    "increase_touch_targets": "Groter Raak Teikens",
+    "reset_to_defaults": "Stel terug na verstek"
+  },
+
+  "validation": {
+    "required_field": "Hierdie veld is vereis",
+    "invalid_email": "Voer asseblief 'n geldige e-pos adres in",
+    "invalid_phone": "Voer asseblief 'n geldige Suid-Afrikaanse telefoonnommer in",
+    "invalid_id_number": "Voer asseblief 'n geldige Suid-Afrikaanse ID nommer in",
+    "password_too_short": "Wagwoord moet ten minste 8 karakters wees",
+    "passwords_dont_match": "Wagwoorde stem nie ooreen nie",
+    "invalid_date": "Voer asseblief 'n geldige datum in",
+    "invalid_time": "Voer asseblief 'n geldige tyd in (UU:mm formaat)",
+    "invalid_dosage": "Voer asseblief 'n geldige dosis met hoeveelheid en eenheid in",
+    "name_too_short": "Naam moet ten minste 2 karakters wees",
+    "file_too_large": "Lêer grootte moet minder as 10MB wees",
+    "invalid_file_type": "Lêer moet 'n JPEG, PNG, of WebP prent wees"
+  },
+
+  "connectivity": {
+    "offline": "Jy is vanlyn",
+    "online": "Verbind",
+    "sync_pending": "Sinkronisering hangende",
+    "sync_in_progress": "Sinkroniseer...",
+    "sync_complete": "Sinkronisering voltooi",
+    "sync_failed": "Sinkronisering het misluk",
+    "retry_sync": "Probeer Sinkronisering Weer",
+    "offline_mode": "Vanlyn Modus",
+    "data_will_sync": "Jou data sal sinkroniseer wanneer verbinding herstel word"
+  },
+
+  "performance": {
+    "loading": "Laai...",
+    "refreshing": "Verfris...",
+    "load_more": "Laai Meer",
+    "no_more_items": "Geen items meer om te laai nie",
+    "pull_to_refresh": "Trek om te verfris",
+    "optimizing": "Optimaliseer prestasie...",
+    "cache_cleared": "Kas suksesvol uitgeklaar"
+  },
+
+  "backup": {
+    "backup_data": "Rugsteun Data",
+    "restore_data": "Herstel Data",
+    "export_data": "Voer Data Uit",
+    "import_data": "Voer Data In",
+    "backup_successful": "Rugsteun suksesvol geskep",
+    "restore_successful": "Data suksesvol herstel",
+    "backup_failed": "Rugsteun het misluk",
+    "restore_failed": "Herstel het misluk",
+    "select_backup_file": "Kies rugsteun lêer",
+    "backup_location": "Rugsteun Ligging",
+    "auto_backup": "Outomatiese Rugsteun",
+    "backup_frequency": "Rugsteun Frekwensie",
+    "daily": "Daagliks",
+    "weekly": "Weekliks",
+    "monthly": "Maandeliks"
+  },
+
+  "medical_id": {
+    "medical_id": "Mediese ID",
+    "emergency_info": "Noodgeval Inligting",
+    "show_when_locked": "Wys Wanneer Gesluit",
+    "medical_conditions": "Mediese Toestande",
+    "allergies_reactions": "Allergieë & Reaksies",
+    "medications": "Medisyne",
+    "blood_type": "Bloedgroep",
+    "organ_donor": "Orgaanskenker",
+    "weight": "Gewig",
+    "height": "Hoogte",
+    "emergency_contacts": "Noodgeval Kontakte",
+    "medical_notes": "Mediese Notas",
+    "add_medical_condition": "Voeg Mediese Toestand By",
+    "add_allergy": "Voeg Allergie By",
+    "add_emergency_contact": "Voeg Noodgeval Kontak By"
+  },
+
+  "drug_interactions": {
+    "interactions": "Dwelm Interaksies",
+    "no_interactions": "Geen bekende interaksies",
+    "check_interactions": "Kontroleer Interaksies",
+    "interaction_warning": "Interaksie Waarskuwing",
+    "mild_interaction": "Ligte Interaksie",
+    "moderate_interaction": "Matige Interaksie",
+    "severe_interaction": "Ernstige Interaksie",
+    "consult_doctor": "Raadpleeg jou dokter voordat jy hierdie medisyne saam neem",
+    "interaction_details": "Interaksie Besonderhede",
+    "affected_medications": "Geaffekteerde Medisyne"
+  },
+
+  "scheduling": {
+    "smart_scheduling": "Slim Skedulering",
+    "schedule_conflict": "Skedule Konflik",
+    "resolve_conflict": "Los Konflik Op",
+    "optimal_times": "Optimale Tye",
+    "food_interactions": "Voedsel Interaksies",
+    "take_with_food": "Neem met kos",
+    "take_without_food": "Neem sonder kos",
+    "take_on_empty_stomach": "Neem op leë maag",
+    "spacing_recommendation": "Spasiëring Aanbeveling",
+    "minimum_gap": "Minimum gaping tussen dosisse: {{hours}} ure"
+  },
+
+  "progress": {
+    "adherence_progress": "Naleef Vordering",
+    "weekly_progress": "Weeklikse Vordering",
+    "monthly_progress": "Maandelikse Vordering",
+    "streak": "Huidige Reeks",
+    "best_streak": "Beste Reeks",
+    "days": "dae",
+    "improvement_tips": "Verbeterings Wenke",
+    "set_more_reminders": "Stel meer gereelde herinneringe",
+    "use_pill_organizer": "Oorweeg om 'n pil organiseerder te gebruik",
+    "talk_to_doctor": "Bespreek naleef uitdagings met jou dokter"
   }
 } 

@@ -29,6 +29,37 @@ export class POPIAComplianceService {
     return await this.showConsentDialog(consentForm)
   }
 
+  /** Record user's decision explicitly */
+  async setConsentDecision(accepted: boolean): Promise<void> {
+    const payload = {
+      status: accepted ? 'accepted' : 'declined',
+      decidedAt: new Date().toISOString(),
+    }
+    await AsyncStorage.setItem(this.consentKey, JSON.stringify(payload))
+  }
+
+  async isConsentAccepted(): Promise<boolean> {
+    try {
+      const raw = await AsyncStorage.getItem(this.consentKey)
+      if (!raw) return false
+      const obj = JSON.parse(raw)
+      return obj?.status === 'accepted'
+    } catch {
+      return false
+    }
+  }
+
+  async getConsentStatus(): Promise<'accepted' | 'declined' | 'unknown'> {
+    try {
+      const raw = await AsyncStorage.getItem(this.consentKey)
+      if (!raw) return 'unknown'
+      const obj = JSON.parse(raw)
+      return obj?.status === 'accepted' ? 'accepted' : obj?.status === 'declined' ? 'declined' : 'unknown'
+    } catch {
+      return 'unknown'
+    }
+  }
+
   /**
    * Data minimization - only collect what's necessary
    */

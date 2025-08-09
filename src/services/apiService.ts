@@ -1,4 +1,5 @@
 import authService from './authService';
+import { DEV_CONFIG } from '../config/development';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
@@ -75,8 +76,8 @@ interface PrescriptionOCRResult {
 }
 
 class ApiService {
-  private baseUrl = 'https://api.medguard-sa.com';
-  private wagtailApiUrl = 'https://api.medguard-sa.com/api/v2';
+  private baseUrl = __DEV__ ? DEV_CONFIG.API_BASE_URL : 'https://api.medguard-sa.com';
+  private wagtailApiUrl = __DEV__ ? DEV_CONFIG.WAGTAIL_API_BASE_URL : 'https://api.medguard-sa.com/api/v2';
   
   // Cache keys for offline functionality
   private static MEDICATIONS_CACHE_KEY = 'cached_medications';
@@ -234,6 +235,78 @@ class ApiService {
       return await response.json();
     } catch (error) {
       console.error('Wagtail content error:', error);
+      throw error;
+    }
+  }
+
+  // Enhanced API methods for Wagtail integration
+  async getWagtailPages(params: Record<string, string | number> = {}) {
+    try {
+      const headers = await authService.getAuthHeaders();
+      const queryString = new URLSearchParams(params as any).toString();
+      const url = `${this.wagtailApiUrl}/pages/${queryString ? `?${queryString}` : ''}`;
+      const response = await fetch(url, { headers });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch Wagtail pages: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Wagtail pages error:', error);
+      throw error;
+    }
+  }
+
+  async searchMedications(query: string, searchType: string = 'medication') {
+    try {
+      const headers = await authService.getAuthHeaders();
+      const response = await fetch(`${this.wagtailApiUrl}/search/`, {
+        method: 'POST',
+        headers: {
+          ...headers,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+          search_type: searchType,
+          fuzzy_matching: true,
+          include_synonyms: true,
+          language: 'en',
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`Search failed: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Search error:', error);
+      throw error;
+    }
+  }
+
+  async uploadMedicalDocument(imageUri: string, documentType: string = 'prescription') {
+    try {
+      const headers = await authService.getAuthHeaders();
+      const formData = new FormData();
+      formData.append('file', {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: `${documentType}_${Date.now()}.jpg`,
+      } as any);
+      formData.append('document_type', documentType);
+      const response = await fetch(`${this.wagtailApiUrl}/documents/`, {
+        method: 'POST',
+        headers: {
+          ...headers,
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error(`Document upload failed: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Document upload error:', error);
       throw error;
     }
   }

@@ -45,7 +45,10 @@
         "USE_FINGERPRINT",
         "USE_BIOMETRIC",
         "SCHEDULE_EXACT_ALARM"
-      ]
+      ],
+      "networkSecurityConfig": {
+        "cleartextTrafficPermitted": true
+      }
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -56,6 +59,12 @@
       "expo-calendar",
       "expo-local-authentication",
       "expo-localization",
+      [
+        "expo-network",
+        {
+          "description": "This app needs access to network to sync medical data."
+        }
+      ],
       [
         "expo-notifications",
         {

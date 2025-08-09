@@ -11,6 +11,7 @@ import { SmartMedicationScheduler, type ScheduleLike } from '../utils/smartSched
 import { useNotifications } from '../contexts/NotificationContext';
 import notificationService from '../services/notificationService';
 import medicalAnalyticsService from '../services/analyticsService';
+import popiaComplianceService from '../services/privacyService';
 
 export interface SchedulePattern {
   type: 'daily' | 'weekly' | 'monthly' | 'interval' | 'as_needed';
@@ -318,7 +319,7 @@ export const useMedicationScheduler = (config: Partial<SchedulerConfig> = {}) =>
     calculateAdherenceStats();
     // Track adherence event (100% for taken)
     const updated = upcomingDoses.find(d => d.id === doseId)
-    if (updated) {
+    if (updated && (await popiaComplianceService.isConsentAccepted())) {
       medicalAnalyticsService.trackAdherence(Number(updated.medicationId), 100).catch(() => {})
     }
   }, []);
@@ -333,7 +334,7 @@ export const useMedicationScheduler = (config: Partial<SchedulerConfig> = {}) =>
     
     calculateAdherenceStats();
     const updated = upcomingDoses.find(d => d.id === doseId)
-    if (updated) {
+    if (updated && (await popiaComplianceService.isConsentAccepted())) {
       medicalAnalyticsService.trackAdherence(Number(updated.medicationId), 0).catch(() => {})
     }
   }, []);
@@ -348,7 +349,7 @@ export const useMedicationScheduler = (config: Partial<SchedulerConfig> = {}) =>
     
     calculateAdherenceStats();
     const updated = upcomingDoses.find(d => d.id === doseId)
-    if (updated) {
+    if (updated && (await popiaComplianceService.isConsentAccepted())) {
       medicalAnalyticsService.trackAdherence(Number(updated.medicationId), 0).catch(() => {})
     }
   }, []);

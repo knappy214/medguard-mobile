@@ -27,6 +27,7 @@ import notificationService from '../../services/notificationService';
 import i18n from '../../i18n';
 import { MedGuardColors } from '../../theme/colors';
 import { Typography, Spacing } from '../../theme/typography';
+import { useAccessibility } from '../../contexts/AccessibilityContext';
 
 // Icon components
 const BackupIcon = (props: IconProps) => <Icon {...props} name='download-outline' />;
@@ -52,6 +53,7 @@ interface ReminderSettings {
 
 const SettingsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const { largeTouchTargets, voiceGuidance, hapticFeedback, setPreferences } = useAccessibility();
   const [reminderSettings, setReminderSettings] = useState<ReminderSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [quietHours, setQuietHours] = useState(false);
@@ -157,6 +159,29 @@ const SettingsScreen: React.FC = () => {
               {i18n.t('common.save')}
             </Button>
           </View>
+        </Card>
+
+        <Card style={styles.card}>
+          <Text category="h6">Accessibility</Text>
+          <Divider style={styles.divider} />
+          <Toggle
+            checked={largeTouchTargets}
+            onChange={(v) => setPreferences({ largeTouchTargets: v })}
+          >
+            Large touch targets
+          </Toggle>
+          <Toggle
+            checked={voiceGuidance}
+            onChange={(v) => setPreferences({ voiceGuidance: v })}
+          >
+            Voice guidance for actions
+          </Toggle>
+          <Toggle
+            checked={hapticFeedback}
+            onChange={(v) => setPreferences({ hapticFeedback: v })}
+          >
+            Haptic feedback
+          </Toggle>
         </Card>
       </ScrollView>
     </Layout>

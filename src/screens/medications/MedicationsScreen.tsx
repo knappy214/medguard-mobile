@@ -41,6 +41,7 @@ import { Spacing } from '../../theme/typography';
 
 // Components
 import MedicationCard from '../../components/medications/MedicationCard';
+import { LargeAccessibleButton } from '../../components/accessibility/AccessibleComponents'
 
 // Types
 interface Medication {
@@ -246,22 +247,12 @@ const MedicationsScreen: React.FC = ({ navigation }: any) => {
       </Text>
       
       <View style={styles.emptyStateActions}>
-        <Button
-          style={styles.emptyStateButton}
-          accessoryLeft={AddIcon}
-          onPress={navigateToAddMedication}
-        >
+        <LargeAccessibleButton onPress={navigateToAddMedication} accessibilityLabel={i18n.t('medications.add_medication')}>
           {i18n.t('medications.add_medication')}
-        </Button>
-        
-        <Button
-          style={styles.emptyStateButton}
-          appearance="outline"
-          accessoryLeft={ScanIcon}
-          onPress={navigateToScanPrescription}
-        >
+        </LargeAccessibleButton>
+        <LargeAccessibleButton onPress={navigateToScanPrescription} accessibilityLabel={i18n.t('camera.title')}>
           {i18n.t('camera.title')}
-        </Button>
+        </LargeAccessibleButton>
       </View>
     </Layout>
   );

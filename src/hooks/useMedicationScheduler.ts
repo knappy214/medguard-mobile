@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { addDays, addWeeks, addMonths, format, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { useMedications } from '../contexts/MedicationContext';
+import { SmartMedicationScheduler, type ScheduleLike } from '../utils/smartScheduler';
 import { useNotifications } from '../contexts/NotificationContext';
 import notificationService from '../services/notificationService';
 
@@ -184,7 +185,23 @@ export const useMedicationScheduler = (config: Partial<SchedulerConfig> = {}) =>
   // Create a new medication schedule
   const createSchedule = useCallback(async (schedule: Omit<MedicationSchedule, 'id'>): Promise<string> => {
     const id = `schedule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const newSchedule: MedicationSchedule = { ...schedule, id };
+
+    // Smart optimize times if enabled and pattern has 0-1 explicit times
+    let optimizedPattern = schedule.pattern;
+    if (finalConfig.smartScheduling && (schedule.pattern.times?.length ?? 0) <= 1) {
+      const timesCount = schedule.pattern.times?.length ?? 0;
+      const inferredFrequency = timesCount <= 1
+        ? 'once_daily'
+        : timesCount === 2
+        ? 'twice_daily'
+        : timesCount === 3
+        ? 'three_times_daily'
+        : 'four_times_daily';
+      const optimizedTimes = SmartMedicationScheduler.optimizeDosingTimes(inferredFrequency);
+      optimizedPattern = { ...schedule.pattern, times: optimizedTimes };
+    }
+
+    const newSchedule: MedicationSchedule = { ...schedule, id, pattern: optimizedPattern };
     
     setSchedules(prev => [...prev, newSchedule]);
     
@@ -549,6 +566,44 @@ export const useMedicationScheduler = (config: Partial<SchedulerConfig> = {}) =>
     getUpcomingDoses,
     getOverdueDoses,
     detectConflicts,
+    // Smart scheduling utilities
+    smartOptimizeTimes: (timesCount: number) =>
+      SmartMedicationScheduler.optimizeDosingTimes(
+        timesCount <= 1 ? 'once_daily' : timesCount === 2 ? 'twice_daily' : timesCount === 3 ? 'three_times_daily' : 'four_times_daily'
+      ),
+    smartDetectScheduleConflicts: (candidate: MedicationSchedule) => {
+      const newEntries: ScheduleLike[] = (candidate.pattern.times || []).map((t) => ({
+        time: t,
+        medication: { name: candidate.medicationName },
+        mealRelation:
+          candidate.foodRequirement === 'with_food'
+            ? 'with_meal'
+            : candidate.foodRequirement === 'empty_stomach'
+            ? 'empty_stomach'
+            : 'any'
+      }))
+      const existingEntries: ScheduleLike[] = schedules.flatMap((s) =>
+        (s.pattern.times || []).map((t) => ({
+          time: t,
+          medication: { name: s.medicationName },
+          mealRelation:
+            s.foodRequirement === 'with_food'
+              ? 'with_meal'
+              : s.foodRequirement === 'empty_stomach'
+              ? 'empty_stomach'
+              : 'any'
+        }))
+      )
+      // For each new entry, find conflicts in existing entries
+      const conflicts = newEntries.flatMap((n) =>
+        SmartMedicationScheduler.detectScheduleConflicts(n, existingEntries).map((rel) => ({
+          newTime: n.time,
+          conflictingTime: rel.time,
+          medication: rel.medication?.name || '',
+        }))
+      )
+      return conflicts
+    },
     
     // Utilities
     generateScheduledDoses,

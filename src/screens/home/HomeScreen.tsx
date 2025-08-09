@@ -27,11 +27,13 @@ import { enZA, af } from 'date-fns/locale';
 
 // Services and utilities
 import apiService from '../../services/apiService';
+import offlineService from '../../services/offlineService';
 import notificationService from '../../services/notificationService';
 import authService from '../../services/authService';
 import i18n from '../../i18n';
 import { MedGuardColors } from '../../theme/colors';
 import { Spacing } from '../../theme/typography';
+import { LargeAccessibleButton } from '../../components/accessibility/AccessibleComponents'
 
 // Types
 interface DashboardData {
@@ -207,6 +209,7 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
+    await offlineService.smartSync();
     await loadDashboardData();
     setRefreshing(false);
   }, []);
@@ -438,35 +441,22 @@ const HomeScreen: React.FC = ({ navigation }: any) => {
               <Text category="s1" appearance="hint">
                 {i18n.t('schedule.no_schedules')}
               </Text>
-              <Button
-                style={styles.emptyStateButton}
-                size="small"
-                onPress={() => navigation.navigate('Schedule')}
-              >
+              <LargeAccessibleButton onPress={() => navigation.navigate('Schedule')} accessibilityLabel={i18n.t('schedule.add_schedule')}>
                 {i18n.t('schedule.add_schedule')}
-              </Button>
+              </LargeAccessibleButton>
             </View>
           )}
         </Card>
 
         {/* Quick Actions */}
         <View style={styles.quickActionsContainer}>
-          <Button
-            style={styles.quickActionButton}
-            accessoryLeft={MedicationIcon}
-            onPress={() => navigation.navigate('Medications')}
-          >
+          <LargeAccessibleButton onPress={() => navigation.navigate('Medications')} accessibilityLabel={i18n.t('medications.add_medication')}>
             {i18n.t('medications.add_medication')}
-          </Button>
+          </LargeAccessibleButton>
           
-          <Button
-            style={styles.quickActionButton}
-            accessoryLeft={CalendarIcon}
-            appearance="outline"
-            onPress={() => navigation.navigate('Schedule')}
-          >
+          <LargeAccessibleButton onPress={() => navigation.navigate('Schedule')} accessibilityLabel={i18n.t('schedule.add_schedule')}>
             {i18n.t('schedule.add_schedule')}
-          </Button>
+          </LargeAccessibleButton>
         </View>
       </ScrollView>
     </Layout>

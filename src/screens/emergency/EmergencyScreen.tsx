@@ -1,11 +1,12 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   StyleSheet,
   ScrollView,
   View,
   Alert,
   Linking,
+  Platform,
 } from 'react-native';
 import {
   Layout,
@@ -22,9 +23,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import authService from '../../services/authService';
+import saHealthcareService, { type GeoLocation, type GPPractice, type Pharmacy } from '../../services/healthcareIntegration';
+import * as Location from 'expo-location';
 import i18n from '../../i18n';
 import { MedGuardColors } from '../../theme/colors';
 import { Spacing } from '../../theme/typography';
+import { LargeAccessibleButton } from '../../components/accessibility/AccessibleComponents'
 
 const PhoneIcon = (props: IconProps) => <Icon {...props} name='phone-outline' />;
 const PersonIcon = (props: IconProps) => <Icon {...props} name='person-outline' />;
@@ -50,6 +54,10 @@ interface MedicalInfo {
 const EmergencyScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const [user, setUser] = useState<any>(null);
+  const [geo, setGeo] = useState<GeoLocation | null>(null);
+  const [nearbyPharmacies, setNearbyPharmacies] = useState<Pharmacy[]>([]);
+  const [nearbyGPs, setNearbyGPs] = useState<GPPractice[]>([]);
+  const [locating, setLocating] = useState(false);
   const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>([
     {
       id: '1',
@@ -166,6 +174,30 @@ ${medicalInfo.emergencyNotes}
     );
   };
 
+  const locateAndSuggestCare = useCallback(async () => {
+    try {
+      setLocating(true);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        return;
+      }
+      const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const location: GeoLocation = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      };
+      setGeo(location);
+      const [pharms, gps] = await Promise.all([
+        saHealthcareService.findNearbyPharmacies(location),
+        saHealthcareService.findNearbyGPs(location),
+      ]);
+      setNearbyPharmacies(pharms);
+      setNearbyGPs(gps);
+    } finally {
+      setLocating(false);
+    }
+  }, []);
+
   const renderEmergencyContact = ({ item }: { item: EmergencyContact }) => (
     <ListItem
       title={item.name}
@@ -214,25 +246,13 @@ ${medicalInfo.emergencyNotes}
           </View>
 
           <View style={styles.emergencyButtons}>
-            <Button
-              style={styles.emergencyButton}
-              status="danger"
-              size="large"
-              accessoryLeft={PhoneIcon}
-              onPress={callEmergencyServices}
-            >
+            <LargeAccessibleButton onPress={callEmergencyServices} accessibilityLabel={i18n.t('emergency.emergency_number')}>
               {i18n.t('emergency.emergency_number')}
-            </Button>
+            </LargeAccessibleButton>
 
-            <Button
-              style={styles.emergencyButton}
-              status="warning"
-              size="large"
-              accessoryLeft={PhoneIcon}
-              onPress={callPoisonControl}
-            >
+            <LargeAccessibleButton onPress={callPoisonControl} accessibilityLabel={i18n.t('emergency.poison_control')}>
               {i18n.t('emergency.poison_control')}
-            </Button>
+            </LargeAccessibleButton>
           </View>
         </Card>
 
@@ -325,6 +345,47 @@ ${medicalInfo.emergencyNotes}
               {medicalInfo.emergencyNotes}
             </Text>
           </View>
+        </Card>
+
+        {/* Care Nearby */}
+        <Card style={styles.medicalIdCard}>
+          <View style={styles.cardHeader}>
+            <Icon name="map" style={styles.cardIcon} fill={MedGuardColors.primary.trustBlue} />
+            <Text category="h6">Nearby Care</Text>
+            <Button size="small" onPress={locateAndSuggestCare} disabled={locating}>
+              {locating ? i18n.t('performance.refreshing') : 'Locate'}
+            </Button>
+          </View>
+          {nearbyPharmacies.map((p, idx) => (
+            <View key={`ph-${idx}`} style={styles.infoSection}>
+              <Text category="s1">Pharmacy: {p.name}</Text>
+              <Text appearance="hint">Hours: {p.hours}</Text>
+              <LargeAccessibleButton
+                onPress={() => {
+                  const url = Platform.select({
+                    ios: `http://maps.apple.com/?daddr=${p.location.lat},${p.location.lng}`,
+                    android: `geo:${p.location.lat},${p.location.lng}?q=${encodeURIComponent(p.name)}`,
+                    default: `https://www.google.com/maps/search/?api=1&query=${p.location.lat},${p.location.lng}`,
+                  });
+                  if (url) Linking.openURL(url);
+                }}
+                accessibilityLabel={`Navigate to ${p.name}`}
+              >
+                Navigate
+              </LargeAccessibleButton>
+            </View>
+          ))}
+          {nearbyGPs.map((g, idx) => (
+            <View key={`gp-${idx}`} style={styles.infoSection}>
+              <Text category="s1">GP: {g.name}</Text>
+              <Text appearance="hint">Hours: {g.hours}</Text>
+              {!!g.phone && (
+                <LargeAccessibleButton onPress={() => Linking.openURL(`tel:${g.phone}`)} accessibilityLabel={`Call ${g.name}`}>
+                  Call
+                </LargeAccessibleButton>
+              )}
+            </View>
+          ))}
         </Card>
 
         {/* Emergency Contacts */}
@@ -429,6 +490,10 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
     paddingLeft: Spacing.sm,
     color: MedGuardColors.primary.trustBlue,
+  },
+  navigateBtn: {
+    marginTop: Spacing.xs,
+    alignSelf: 'flex-start',
   },
   emergencyNotes: {
     backgroundColor: MedGuardColors.extended.lightGray,

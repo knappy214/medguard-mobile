@@ -9,6 +9,7 @@ import i18n from '../../i18n';
 import { MedGuardColors } from '../../theme/colors';
 import { Spacing } from '../../theme/typography';
 import { format, subDays } from 'date-fns';
+import medicalAnalyticsService from '../../services/analyticsService';
 import { enZA, af } from 'date-fns/locale';
 
 const screenWidth = Dimensions.get('window').width;
@@ -35,28 +36,36 @@ const AnalyticsScreen: React.FC = () => {
   const loadAnalytics = async () => {
     setLoading(true);
     try {
-      // Mock data or call backend analytics endpoint
-      // Here we create sample weekly and monthly data arrays
+      // Compute from local analytics data
+      const report = await medicalAnalyticsService.generateAdherenceReport();
+      setOverallAdherence(Math.round(report.overallAdherence));
+
+      // Build simple weekly/monthly arrays from last 7/30 days of events
       const today = new Date();
-      const weekly: AdherenceDataPoint[] = [];
+      const events = await (medicalAnalyticsService as any).getAdherenceData?.();
+      const last7: AdherenceDataPoint[] = [];
       for (let i = 6; i >= 0; i--) {
         const date = subDays(today, i);
-        weekly.push({
-          date: format(date, 'EEE', { locale }),
-          adherence: Math.floor(80 + Math.random() * 20),
-        });
+        const dayKey = format(date, 'yyyy-MM-dd');
+        const dayEvents = (events || []).filter((e: any) => (e.timestamp || '').slice(0, 10) === dayKey);
+        const avg = dayEvents.length
+          ? Math.round(dayEvents.reduce((s: number, e: any) => s + e.adherenceRate, 0) / dayEvents.length)
+          : 0;
+        last7.push({ date: format(date, 'EEE', { locale }), adherence: avg });
       }
-      const monthly: AdherenceDataPoint[] = [];
+      setWeeklyData(last7);
+
+      const last30: AdherenceDataPoint[] = [];
       for (let i = 29; i >= 0; i -= 2) {
         const date = subDays(today, i);
-        monthly.push({
-          date: format(date, 'd', { locale }),
-          adherence: Math.floor(80 + Math.random() * 20),
-        });
+        const dayKey = format(date, 'yyyy-MM-dd');
+        const dayEvents = (events || []).filter((e: any) => (e.timestamp || '').slice(0, 10) === dayKey);
+        const avg = dayEvents.length
+          ? Math.round(dayEvents.reduce((s: number, e: any) => s + e.adherenceRate, 0) / dayEvents.length)
+          : 0;
+        last30.push({ date: format(date, 'd', { locale }), adherence: avg });
       }
-      setWeeklyData(weekly);
-      setMonthlyData(monthly);
-      setOverallAdherence(Math.floor(weekly.reduce((sum, p) => sum + p.adherence, 0) / weekly.length));
+      setMonthlyData(last30);
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
       console.error('Load analytics error:', error);

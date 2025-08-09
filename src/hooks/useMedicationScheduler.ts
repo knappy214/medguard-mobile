@@ -10,6 +10,7 @@ import { useMedications } from '../contexts/MedicationContext';
 import { SmartMedicationScheduler, type ScheduleLike } from '../utils/smartScheduler';
 import { useNotifications } from '../contexts/NotificationContext';
 import notificationService from '../services/notificationService';
+import medicalAnalyticsService from '../services/analyticsService';
 
 export interface SchedulePattern {
   type: 'daily' | 'weekly' | 'monthly' | 'interval' | 'as_needed';
@@ -315,6 +316,11 @@ export const useMedicationScheduler = (config: Partial<SchedulerConfig> = {}) =>
     
     // Update adherence stats
     calculateAdherenceStats();
+    // Track adherence event (100% for taken)
+    const updated = upcomingDoses.find(d => d.id === doseId)
+    if (updated) {
+      medicalAnalyticsService.trackAdherence(Number(updated.medicationId), 100).catch(() => {})
+    }
   }, []);
 
   // Mark a dose as missed
@@ -326,6 +332,10 @@ export const useMedicationScheduler = (config: Partial<SchedulerConfig> = {}) =>
     ));
     
     calculateAdherenceStats();
+    const updated = upcomingDoses.find(d => d.id === doseId)
+    if (updated) {
+      medicalAnalyticsService.trackAdherence(Number(updated.medicationId), 0).catch(() => {})
+    }
   }, []);
 
   // Mark a dose as skipped
@@ -337,6 +347,10 @@ export const useMedicationScheduler = (config: Partial<SchedulerConfig> = {}) =>
     ));
     
     calculateAdherenceStats();
+    const updated = upcomingDoses.find(d => d.id === doseId)
+    if (updated) {
+      medicalAnalyticsService.trackAdherence(Number(updated.medicationId), 0).catch(() => {})
+    }
   }, []);
 
   // Snooze a dose

@@ -28,6 +28,8 @@ import i18n from '../../i18n';
 import { MedGuardColors } from '../../theme/colors';
 import { Typography, Spacing } from '../../theme/typography';
 import { useAccessibility } from '../../contexts/AccessibilityContext';
+import popiaComplianceService from '../../services/privacyService';
+import ConsentModal from '../../components/privacy/ConsentModal';
 
 // Icon components
 const BackupIcon = (props: IconProps) => <Icon {...props} name='download-outline' />;
@@ -54,6 +56,7 @@ interface ReminderSettings {
 const SettingsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { largeTouchTargets, voiceGuidance, hapticFeedback, setPreferences } = useAccessibility();
+  const [consentVisible, setConsentVisible] = useState(false);
   const [reminderSettings, setReminderSettings] = useState<ReminderSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [quietHours, setQuietHours] = useState(false);
@@ -184,6 +187,22 @@ const SettingsScreen: React.FC = () => {
           </Toggle>
         </Card>
       </ScrollView>
+      <ScrollView style={styles.scroll}>
+        <Card style={styles.card}>
+          <Text category="h6">Privacy</Text>
+          <Divider style={styles.divider} />
+          <Button style={{ marginBottom: Spacing.sm }} onPress={() => setConsentVisible(true)}>
+            Review Consent
+          </Button>
+          <Button appearance="outline" onPress={async () => {
+            const exportBlob = await popiaComplianceService.exportUserData();
+            Alert.alert('Export Ready', 'Your data export (JSON) has been prepared.');
+          }}>
+            Export My Data (POPIA)
+          </Button>
+        </Card>
+      </ScrollView>
+      <ConsentModal visible={consentVisible} onAccept={async () => { await popiaComplianceService.requestDataProcessingConsent(); setConsentVisible(false); }} onDecline={() => setConsentVisible(false)} onDismiss={() => setConsentVisible(false)} />
     </Layout>
   );
 };

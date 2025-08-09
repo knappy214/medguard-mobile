@@ -405,6 +405,19 @@
     "reset_to_defaults": "Reset to Defaults"
   },
 
+  "privacy": {
+    "consent_title": "Data Processing Consent (POPIA)",
+    "consent_description": "To provide safe medication services, we need your consent to process certain data.",
+    "consent_personalInfo": "We collect your name and contact details for reminders.",
+    "consent_healthInfo": "We process your medication data to schedule and remind doses.",
+    "consent_sharing": "We do not share data with third parties without explicit consent.",
+    "consent_retention": "Data is kept for 7 years per medical record requirements.",
+    "consent_rights": "You can request deletion, correction or portability at any time.",
+    "consent_lawfulBasis": "Processing is based on legitimate interest for healthcare provision.",
+    "accept": "Accept",
+    "decline": "Decline"
+  },
+
   "validation": {
     "required_field": "This field is required",
     "invalid_email": "Please enter a valid email address",

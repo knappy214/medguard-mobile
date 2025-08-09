@@ -405,6 +405,19 @@
     "reset_to_defaults": "Stel terug na verstek"
   },
 
+  "privacy": {
+    "consent_title": "Dataverwerking Toestemming (POPIA)",
+    "consent_description": "Om veilige mediese dienste te lewer, het ons jou toestemming nodig om sekere data te verwerk.",
+    "consent_personalInfo": "Ons versamel jou naam en kontakbesonderhede vir herinneringe.",
+    "consent_healthInfo": "Ons verwerk jou medikasie data om dosisse te skeduleer en te herinner.",
+    "consent_sharing": "Ons deel nie data met derde partye sonder uitdruklike toestemming nie.",
+    "consent_retention": "Data word vir 7 jaar gehou volgens mediese rekord vereistes.",
+    "consent_rights": "Jy kan enige tyd uitvee, regstelling of oordraagbaarheid versoek.",
+    "consent_lawfulBasis": "Verwerking is gebaseer op regmatige belang vir gesondheidsorg lewering.",
+    "accept": "Aanvaar",
+    "decline": "Weier"
+  },
+
   "validation": {
     "required_field": "Hierdie veld is vereis",
     "invalid_email": "Voer asseblief 'n geldige e-pos adres in",

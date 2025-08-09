@@ -19,6 +19,8 @@ import * as Haptics from 'expo-haptics';
 import { MedGuardColors } from '../../theme/colors';
 import { Spacing , Typography} from '../../theme/typography';
 import i18n from '../../i18n';
+import popiaComplianceService from '../../services/privacyService';
+import ConsentModal from '../../components/privacy/ConsentModal';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -38,6 +40,7 @@ const OnboardingScreen: React.FC = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [consentVisible, setConsentVisible] = useState(false);
 
   const slides: OnboardingSlide[] = [
     {
@@ -102,7 +105,13 @@ const OnboardingScreen: React.FC = ({ navigation }: any) => {
     }
   };
 
-  const completeOnboarding = () => {
+  const completeOnboarding = async () => {
+    // Show localized consent modal before finishing
+    setConsentVisible(true);
+  };
+
+  const onAcceptConsent = async () => {
+    try { await popiaComplianceService.requestDataProcessingConsent(); } catch {}
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     // Store onboarding completion status
     // AsyncStorage.setItem('onboarding_completed', 'true');
@@ -111,6 +120,10 @@ const OnboardingScreen: React.FC = ({ navigation }: any) => {
       routes: [{ name: 'Auth' }],
     });
   };
+
+  const onDeclineConsent = () => {
+    setConsentVisible(false);
+  }
 
   const skipOnboarding = () => {
     completeOnboarding();
@@ -244,6 +257,7 @@ const OnboardingScreen: React.FC = ({ navigation }: any) => {
           </Button>
         </View>
       </View>
+      <ConsentModal visible={consentVisible} onAccept={onAcceptConsent} onDecline={onDeclineConsent} onDismiss={onDeclineConsent} />
     </Layout>
   );
 };

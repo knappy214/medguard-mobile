@@ -108,7 +108,7 @@ const ProfileScreen: React.FC = ({ navigation }: any) => {
           <View style={styles.profileHeader}>
             <Avatar
               size="giant"
-              source={require('../../assets/images/default-avatar.png')}
+              source={require('../../../assets/icon.png')}
             />
             <View style={styles.profileNameContainer}>
               <Text category="h5">

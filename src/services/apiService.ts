@@ -428,11 +428,14 @@ class ApiService {
   // Utility method to check network connectivity and sync
   async ensureSync(): Promise<void> {
     try {
-      // Test connection with a lightweight request
+      // Test connection with a lightweight request (AbortSignal.timeout not available on RN)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
       const response = await fetch(`${this.baseUrl}/api/health/`, {
         method: 'HEAD',
-        signal: AbortSignal.timeout(5000),
+        signal: controller.signal as any,
       });
+      clearTimeout(timeoutId);
       
       if (response.ok) {
         await this.syncOfflineActions();

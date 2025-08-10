@@ -61,7 +61,8 @@
     "react-native-svg": "15.11.2",
     "react-native-vector-icons": "^10.0.3",
     "victory": "^37.3.6",
-    "victory-native": "^41.18.0"
+    "victory-native": "^41.18.0",
+    "expo-speech": "~13.1.7"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
